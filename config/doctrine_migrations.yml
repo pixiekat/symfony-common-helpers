@@ -1,0 +1,5 @@
+doctrine_migrations:
+  #  namespace: 'Pixiekat\SymfonyHelpers'
+  #  directory: ../migrations
+  migrations_paths:
+    'Pixiekat\\SymfonyHelpers': '%kernel.project_dir%/vendor/pixiekat/symfony-common-helpers/migrations'

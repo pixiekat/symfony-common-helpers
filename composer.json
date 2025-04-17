@@ -1,10 +1,15 @@
 {
     "name": "pixiekat/symfony-common-helpers",
     "description": "A collection of traits and other common files for Symfony applications.",
-    "type": "library",
+    "type": "symfony-bundle",
     "autoload": {
         "psr-4": {
             "Pixiekat\\SymfonyHelpers\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Pixiekat\\SymfonyHelpers\\Tests\\": "tests/"
         }
     },
     "authors": [
@@ -13,9 +18,13 @@
             "email": "katie@pixiekitten.net"
         }
     ],
+    "config": {
+        "sort-packages": true
+    },
     "license": "proprietary",
     "require": {
-        "php": "^8.2 || ^8.3 || ^8.4"
+        "php": "^8.2 || ^8.3 || ^8.4",
+        "symfony/framework-bundle": "^6.4 || >=7.0"
     },
     "require-dev": {
         "kint-php/kint": "^6.0"

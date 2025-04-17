@@ -1,0 +1,23 @@
+parameters:
+
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  Pixiekat\SymfonyHelpers\:
+    resource: '../src/*'
+    exclude: '../src/{Entity,Migrations,Tests,Kernel.php}'
+
+  Pixiekat\SymfonyHelpers\Form\:
+    resource: '../src/Form/*'
+    autowire: true
+    autoconfigure: true
+
+  Pixiekat\SymfonyHelpers\Services\:
+    resource: '../src/Services/*'
+    public: true
+    tags: ['controller.service_arguments']
+
+  Pixiekat\SymfonyHelpers\Services\TranslationLoader:
+    arguments: ['../translations']

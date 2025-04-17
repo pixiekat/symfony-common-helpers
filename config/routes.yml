@@ -1,0 +1,3 @@
+pixiekats_symfony_helpers_bundle.routes:
+    resource: '../src/Controller/'
+    type: attribute
