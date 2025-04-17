@@ -11,11 +11,26 @@ trait EntityIdTrait {
   #[ORM\Column(name: 'id', nullable: false)]
   private ?int $id = null;
 
+  /**
+   * {@inheritdoc}
+   */
   public function id(): ?int {
     return $this->id;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getId(): ?int {
     return $this->id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setId(?int $id): static {
+    $this->id = $id;
+
+    return $this;
   }
 }

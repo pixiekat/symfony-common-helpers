@@ -4,10 +4,16 @@ namespace Pixiekat\SymfonyHelpers\Traits\Entity;
 
 trait EntityEmailAddressTrait {
 
+  /**
+   * {@inheritdoc}
+   */
   public function getEmailAddress(): ?string {
     return $this->emailAddress;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function setEmailAddress(string $emailAddress): static {
     $this->emailAddress = $emailAddress;
 
