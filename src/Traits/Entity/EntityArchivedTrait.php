@@ -2,7 +2,13 @@
 declare(strict_types=1);
 namespace Pixiekat\SymfonyHelpers\Traits\Entity;
 
+use \DateTimeImmutable;
+use Doctrine\ORM\Mapping as ORM;
+
 trait EntityArchivedTrait {
+
+  #[ORM\Column(name: 'archived_at', nullable: true)]
+  private ?DateTimeImmutable $archivedAt = null;
 
   public function archive(): self {
     $this->setArchivedAt(new \DateTimeImmutable());
