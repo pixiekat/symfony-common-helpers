@@ -26,7 +26,7 @@ trait EntityLabelTrait {
   /**
    * {@inheritdoc}
    */
-  public function setLabel(?mixed $label): self {
+  public function setLabel(mixed $label): self {
     $this->label = $label;
     return $this;
   }
