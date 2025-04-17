@@ -15,10 +15,10 @@
     ],
     "license": "proprietary",
     "require": {
-        "php": "^8.2 || ^8.3 || ^8.4",
+        "php": "^8.2 || ^8.3 || ^8.4"
     },
     "require-dev": {
-        "kint-php/kint": "^6.0",
+        "kint-php/kint": "^6.0"
     }
 }
 
