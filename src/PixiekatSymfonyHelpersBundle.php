@@ -6,7 +6,7 @@ use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Pixiekat\SymfonyHelpers\DependencyInjection\SymfonyHelpersExtension;
 
-class PixiekatSymfonyHelpers extends AbstractBundle {
+class PixiekatSymfonyHelpersBundle extends AbstractBundle {
   public function getPath(): string {
       return \dirname(__DIR__);
   }
