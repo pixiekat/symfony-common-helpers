@@ -2,7 +2,12 @@
 declare(strict_types=1);
 namespace Pixiekat\SymfonyHelpers\Traits\Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
 trait EntityDescriptionTrait {
+
+  #[ORM\Column(type: 'string', nullable: true)]
+  private mixed $description = null;
 
   /**
    * {@inheritdoc}
