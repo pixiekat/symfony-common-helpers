@@ -12,8 +12,24 @@ use Doctrine\ORM\Mapping as ORM;
 class AuditLog implements Interfaces\Entity\AuditLogInterface {
   use PixieTraits\EntityIdTrait;
 
-  #[ORM\Column(name: 'audit_action', type: 'string', nullable: false)]
-  private $action = null;
+  #[ORM\Column(type: 'string', nullable: false)]
+  private string $action = null;
+
+  #[ORM\Column(type: 'string', nullable: false)]
+  private string $entityType = null;
+
+  #[ORM\Column(type: 'string', nullable: false)]
+  private string $performedBy;
+
+  #[ORM\Column(name: 'created_at', type: 'string', nullable: false)]
+  private \DateTimeImmutable $createdAt;
+
+  /**
+   * The constructor of this audit log.
+   */
+  public function __construct(): void {
+    $this->setCreatedAt(new \DateTimeImmutable);
+  }
 
   /**
    * {@inheritdoc}
@@ -25,8 +41,56 @@ class AuditLog implements Interfaces\Entity\AuditLogInterface {
   /**
    * {@inheritdoc}
    */
+  public function getEntityType(): string {
+    return $this->entityType;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPerformedBy(): string {
+    return $this->performedBy;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCreatedAt(): ?\DateTimeImmutable {
+    return $this->createdAt ?? null;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function setAction(string $action): static {
     $this->action = $action;
+
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setEntityType(string $entityType): static {
+    $this->entityType = $entityType;
+
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setPerformedBy(string $performedBy): static {
+    $this->performedBy = $performedBy;
+
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setCreatedAt(\DateTimeImmutable $createdAt): static {
+    $this->createdAt = $createdAt;
 
     return $this;
   }
