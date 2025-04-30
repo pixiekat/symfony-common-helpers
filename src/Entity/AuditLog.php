@@ -27,7 +27,7 @@ class AuditLog implements Interfaces\Entity\AuditLogInterface {
   /**
    * The constructor of this audit log.
    */
-  public function __construct(): void {
+  public function __construct() {
     $this->setCreatedAt(new \DateTimeImmutable);
   }
 
