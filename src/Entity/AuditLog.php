@@ -13,10 +13,10 @@ class AuditLog implements Interfaces\Entity\AuditLogInterface {
   use PixieTraits\EntityIdTrait;
 
   #[ORM\Column(type: 'string', nullable: false)]
-  private string $action = null;
+  private string $action;
 
   #[ORM\Column(type: 'string', nullable: false)]
-  private string $entityType = null;
+  private string $entityType;
 
   #[ORM\Column(type: 'string', nullable: false)]
   private string $performedBy;
