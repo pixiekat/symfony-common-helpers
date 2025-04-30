@@ -21,7 +21,7 @@ class AuditLog implements Interfaces\Entity\AuditLogInterface {
   #[ORM\Column(type: 'string', nullable: false)]
   private string $performedBy;
 
-  #[ORM\Column(name: 'created_at', type: 'string', nullable: false)]
+  #[ORM\Column(name: 'created_at', type: 'datetime_immutable', nullable: false)]
   private \DateTimeImmutable $createdAt;
 
   /**

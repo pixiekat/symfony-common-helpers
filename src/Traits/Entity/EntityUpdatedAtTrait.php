@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 trait EntityUpdatedAtTrait {
 
-  #[ORM\Column(name: 'updated_at', nullable: false)]
+  #[ORM\Column(name: 'updated_at', nullable: true)]
   private \DateTimeImmutable $updatedAt;
 
   public function getUpdatedAt(): \DateTimeImmutable {
