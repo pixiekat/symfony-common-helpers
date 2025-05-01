@@ -14,12 +14,13 @@ class AuditLogManager {
   /**
    * {@inheritdoc}
    */
-  public function log(string $action, string $entityType, string $performedBy): bool {
+  public function log(string $action, string $entityType, string $performedBy, ?array $additionalData = []): bool {
     try {
       $auditlog = new Entity\AuditLog;
       $auditlog->setAction($action);
       $auditlog->setEntityType($entityType);
       $auditlog->setPerformedBy($performedBy);
+      $auditlog->setAdditionalData($additionalData);
       $this->entityManager->persist($auditlog);
       $this->entityManager->flush();
 

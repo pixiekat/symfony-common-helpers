@@ -21,6 +21,9 @@ class AuditLog implements Interfaces\Entity\AuditLogInterface {
   #[ORM\Column(type: 'string', nullable: false)]
   private string $performedBy;
 
+  #[ORM\Column(type: 'array', nullable: true)]
+  private array $additionalData = [];
+
   #[ORM\Column(name: 'created_at', type: 'datetime_immutable', nullable: false)]
   private \DateTimeImmutable $createdAt;
 
@@ -29,6 +32,7 @@ class AuditLog implements Interfaces\Entity\AuditLogInterface {
    */
   public function __construct() {
     $this->setCreatedAt(new \DateTimeImmutable);
+    $this->additionalData = [];
   }
 
   /**
@@ -50,6 +54,10 @@ class AuditLog implements Interfaces\Entity\AuditLogInterface {
    */
   public function getPerformedBy(): string {
     return $this->performedBy;
+  }
+
+  public function getAdditionalData(): array {
+    return $this->additionalData;
   }
 
   /**
@@ -82,6 +90,12 @@ class AuditLog implements Interfaces\Entity\AuditLogInterface {
    */
   public function setPerformedBy(string $performedBy): static {
     $this->performedBy = $performedBy;
+
+    return $this;
+  }
+
+  public function setAdditionalData(array $additionalData): static {
+    $this->additionalData = $additionalData;
 
     return $this;
   }
