@@ -18,7 +18,7 @@ class UserController extends AbstractController {
   #[Route('/login', name: 'app_login')]
   public function index(AuthenticationUtils $authenticationUtils): Response {
 
-    if ($this->security->isGranted('IS_AUTHENTICATED_FULLY')) {
+    if ($this->security->isGranted('IS_AUTHENTICATED')) {
       return $this->redirect('/');
     }
     // get the login error if there is one
