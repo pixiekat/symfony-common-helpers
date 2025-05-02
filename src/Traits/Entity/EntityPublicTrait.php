@@ -27,7 +27,7 @@ trait EntityPublicTrait {
   }
 
   public function setIsPublic(?bool $isPublic): self {
-    $this->isPublic = $isPublic;
+    $this->isPublic = (bool) $isPublic;
 
     return $this;
   }
