@@ -17,6 +17,28 @@ abstract class BaseVoter extends Voter {
   ) {  }
 
   /**
+   * Checks if the user has a specific role.
+   *
+   * @param string $role
+   * @return boolean
+   */
+  public function hasRole(string $role): bool {
+    return $this->security->isGranted($role) ?? false;
+  }
+
+  /**
+   * Checks if the user is an admin.
+   */
+  public function isAdmin(): bool {
+    foreach (['ROLE_ADMIN', 'ROLE_SYSADMIN', 'ROLE_SUPER_ADMIN'] as $role) {
+      if ($this->security->isGranted($role)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Checks if the user is anonymous.
    *
    * @return boolean
