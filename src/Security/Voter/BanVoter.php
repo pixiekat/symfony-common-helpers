@@ -12,9 +12,9 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
-final class RunVoter extends BaseVoter implements Interfaces\Security\Voter\RunVoterInterface {
+final class BanVoter extends BaseVoter implements Interfaces\Security\Voter\BanVoterInterface {
 
-  use PixieTraits\Voter\VoterCRUDTrait;
+  use Traits\Voter\VoterCRUDTrait;
 
   protected function supports(string $attribute, mixed $subject): bool {
     return in_array($attribute, $this->getAttributes()) && $subject instanceof Entity\Ban;
