@@ -21,6 +21,17 @@ class BanSubscriber implements EventSubscriberInterface {
 
   public function onRequestEvent(RequestEvent $event): void {
     $request = $event->getRequest();
+
+    if (!$event->isMainRequest()) {
+      return;
+    }
+
+    $request = $event->getRequest();
+    // Allow internal pages, like WDT and Profiler
+    if (str_starts_with($request->getPathInfo(), '/_')) {
+      return;
+    }
+
     $ipAddress = $request->getClientIp();
     if ($ipAddress === null) {
       $this->logger->debug('No IP address found in the request.');
@@ -30,10 +41,10 @@ class BanSubscriber implements EventSubscriberInterface {
     // Check if the IP address is banned
     if ($this->isBanned($ipAddress)) {
       $this->logger->warning('Blocked request from banned IP address: ' . $ipAddress);
-      $bannedMsg = $this->twig->render('@PixiekatSymfonyHelpers/ban/banned.html.twig', [
+      $content = $this->twig->render('@PixiekatSymfonyHelpers/ban/banned.html.twig', [
         'ipAddress' => $ipAddress,
       ]);
-      $response = new Response($bannedMsg, 403);
+      $response = new Response($content, 403);
       $event->setResponse($response);
     }
 
