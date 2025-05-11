@@ -19,6 +19,21 @@ class BanRepository extends ServiceEntityRepository {
   }
 
   /**
+   * Find all active bans.
+   */
+  public function findAllActiveBans(): array {
+    $qb = $this->createQueryBuilder('b')
+      ->andWhere('b.expiresAt IS NULL OR b.expiresAt > :now')
+      ->setParameter('now', new \DateTimeImmutable())
+      ->orderBy('b.createdAt', 'DESC')
+      ->addOrderBy('b.expiresAt', 'DESC')
+      ->addOrderBy('b.ipAddress', 'ASC')
+    ;
+
+    return $qb->getQuery()->getResult() ?? [];
+  }
+
+  /**
    * Checks to see if a given IP address is banned.
    */
   public function findIfIpBanned(string $ipAddress): ?Entity\Ban {
