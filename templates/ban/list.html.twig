@@ -8,30 +8,31 @@
       <div class="col">
         <h1>Banned IP Addresses</h1>
 
-        <table>
+        <div class="table">
+          <table class="table table-striped">
             <thead>
-                <tr>
-                    <th>IP Address</th>
-                    <th>Created At</th>
-                    <th>Expires At</th>
-                    <th>Action</th>
-                </tr>
+              <tr>
+                <th>IP Address</th>
+                <th>Created At</th>
+                <th>Expires At</th>
+                <th>Action</th>
+              </tr>
             </thead>
             <tbody>
-            {{ dump(bans) }}
-                {% for ban in bans %}
-                    <tr>
-                        <td>{{ ban.ipAddress }}</td>
-                        <td>{{ ban.createdAt|date('Y-m-d H:i:s') }}</td>
-                        <td>{{ ban.expiresAt ? ban.expiresAt|date('Y-m-d H:i:s') : 'Never' }}</td>
-                        <td>{#<a href="{{ path('ban_delete', { 'id': ban.id }) }}">Delete</a>#}</td>
-                    </tr>
-                {% endfor %}
+              {% for ban in bans %}
+                <tr>
+                  <td>{{ ban.ipAddress }}</td>
+                  <td>{{ ban.createdAt|date('Y-m-d H:i:s') }}</td>
+                  <td>{{ ban.expiresAt ? ban.expiresAt|date('Y-m-d H:i:s') : 'Never' }}</td>
+                  <td><a href="{{ path('pixiekat_symfony_helpers_ban_remove', { 'id': ban.id }) }}">Delete</a></td>
+                </tr>
+              {% endfor %}
             </tbody>
-        </table>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 
-  {#<a href="{{ path('ban_create') }}">Add New Ban</a>#}
+  <a href="{{ path('pixiekat_symfony_helpers_ban_add') }}">Add New Ban</a>
 {% endblock %}
