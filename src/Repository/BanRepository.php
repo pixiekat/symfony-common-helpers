@@ -22,12 +22,23 @@ class BanRepository extends ServiceEntityRepository {
    * Checks to see if a given IP address is banned.
    */
   public function findIfIpBanned(string $ipAddress): ?Entity\Ban {
-    return $this->createQueryBuilder('b')
-      ->andWhere('b.ipAddress = :ipAddress')
-      ->andWhere('b.expiresAt IS NULL OR b.expiresAt > :now')
+    $qb = $this->createQueryBuilder('b');
+
+    $qb->andWhere(
+      $qb->expr()->orX(
+        $qb->expr()->isNull('b.expiresAt'),
+        $qb->expr()->gt('b.expiresAt', ':now')
+      ),
+    );
+
+    $qb->andWhere('b.ipAddress = :ipAddress');
+    $qb
       ->setParameter('ipAddress', $ipAddress)
-      ->setParameter('now', new \DateTimeImmutable())
-      ->getQuery()
-      ->getOneOrNullResult();
+      ->setParameter('now', new \DateTimeImmutable());
+    ;
+
+    $query = $qb->getQuery();
+    $result = $query->getOneOrNullResult();
+    return $result ?? null;
   }
 }
