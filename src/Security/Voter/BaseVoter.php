@@ -31,7 +31,7 @@ abstract class BaseVoter extends Voter {
    */
   public function isAdmin(): bool {
     foreach (['ROLE_ADMIN', 'ROLE_SYSADMIN', 'ROLE_SUPER_ADMIN'] as $role) {
-      if ($this->security->isGranted($role)) {
+      if ($this->hasRole($role)) {
         return true;
       }
     }
