@@ -33,7 +33,7 @@ final class BanVoter extends BaseVoter implements Interfaces\Security\Voter\BanV
       case self::BAN_LIST_BANS:
       case self::BAN_REMOVE_BAN:
       case self::BAN_VIEW_BAN:
-        return true; //$this->isAdmin();
+        return $this->isAdmin();
         break;
     }
   }
