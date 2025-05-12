@@ -29,49 +29,73 @@ class BanManager implements Interfaces\Services\BanManagerInterface {
     // Get the repository for the Ban entity
     $repository = $this->entityManager->getRepository(Entity\Ban::class);
 
-    // split by cidr type
-    foreach ([
-      //Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_8,
-      //Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_16,
-      //Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_24,
-      Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_32,
-    ] as $cidrType) {
-      switch ($cidrType) {
-        case Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_8:
-          $ipAddress = substr($ipAddress, 0, strpos($ipAddress, '.') + 1);
-          break;
+    // Check if if the cidr 32 type is banned first
+    $ban = $repository->findIfIpBanned($ipAddress);
+    if (!$ban) {
+      // no ban on exact match, check if the ip address is in a cidr block
+      foreach ([
+        Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_8,
+        Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_16,
+        Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_24,
+      ] as $cidrType) {
+        switch ($cidrType) {
+          case Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_8:
+            $ipAddress = substr($ipAddress, 0, strpos($ipAddress, '.') + 1);
+            break;
 
-        case Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_16:
-          $ipAddress = substr($ipAddress, 0, strpos($ipAddress, '.') + 1);
-          break;
+          case Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_16:
+            $ipAddress = substr($ipAddress, 0, strpos($ipAddress, '.') + 1);
+            break;
 
-        case Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_24:
-          $ipAddress = substr($ipAddress, 0, strrpos($ipAddress, '.') + 1);
-          break;
+          case Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_24:
+            $ipAddress = substr($ipAddress, 0, strrpos($ipAddress, '.') + 1);
+            break;
 
-        case Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_32:
-          // No change needed
-          break;
-
-        default:
-          throw new \InvalidArgumentException('Invalid CIDR type');
-      }
-
-      if ($cidrType == Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_32) {
-        $ban = $repository->findIfIpBanned($ipAddress);
-      }
-      else {
+          default:
+            throw new \InvalidArgumentException('Invalid CIDR type');
+        }
         $ban = $repository->findIfIpBannedByCidrType($ipAddress, $cidrType);
-      }
-
-      if ($ban) {
-        return $ban;
+        if ($ban) {
+          $foundIp = $ban->getIpAddress();
+          if ($this->checkCidr($foundIp, $cidrType) == Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_32) {
+            $this->logger->debug("Found IP is in CIDR block 32: $foundIp/$cidrType");
+            $ban = null;
+          }
+        }
       }
     }
 
+    // if $ban is not null, it means the IP address is banned
+    if ($ban) {
+      $this->logger->debug('Found IP address ' . $ipAddress . ' in the database.');
+      return $ban;
+    }
 
     // Clearly not banned or can't find a ban.
     return null;
+  }
+
+  protected function checkCidr($ip, $cidrType) {
+    $ip = rtrim($ip, '.'); // Remove trailing dot if present
+    $parts = explode('.', $ip); // Split IP address into parts
+    $length = count($parts);
+    switch ($length) {
+      case 1:
+        return Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_8;
+        break;
+      case 2:
+        return Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_16;
+        break;
+      case 3:
+        return Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_24;
+        break;
+      case 4:
+        return Interfaces\Services\BanManagerInterface::BAN_MANAGER_CIDR_32;
+        break;
+      default:
+        $this->logger->warning('Invalid IP address format: ' . $ip);
+    }
+    return false;
   }
 
 }
