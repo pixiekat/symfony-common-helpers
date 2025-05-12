@@ -7,7 +7,17 @@
     <div class="row">
       <div class="col">
         <h1>Banned IP Addresses</h1>
-
+      </div>
+    </div>
+    <div class="row">
+      <div class="col text-end mb-3">
+        {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\BanVoterInterface::BAN_ADD_BAN')) %}
+          <a class="btn btn-primary" href="{{ path('pixiekat_symfony_helpers_ban_add') }}">Add New Ban</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
         <div class="table">
           <table class="table table-striped">
             <thead>
@@ -48,6 +58,4 @@
       </div>
     </div>
   </div>
-
-  <a href="{{ path('pixiekat_symfony_helpers_ban_add') }}">Add New Ban</a>
 {% endblock %}
