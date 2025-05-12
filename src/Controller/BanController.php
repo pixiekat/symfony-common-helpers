@@ -24,7 +24,7 @@ class BanController extends AbstractController {
     private readonly Security $security,
   ) {}
 
-  #[IsGranted(Interfaces\Security\Voter\BanVoterInterface::BAN_LIST_BANS)]
+  #[IsGranted(Interfaces\Security\Voter\BanVoterInterface::BAN_LIST_BANS, message: 'You do not have permission to view the ban list.')]
   #[Route('/', name: 'pixiekat_symfony_helpers_ban')]
   #[Route('/list', name: 'pixiekat_symfony_helpers_ban_list')]
   public function list(): Response {
