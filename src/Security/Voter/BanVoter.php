@@ -29,12 +29,16 @@ final class BanVoter extends BaseVoter implements Interfaces\Security\Voter\BanV
 
     switch ($attribute) {
       case self::BAN_ADD_BAN:
+      case self::BAN_EDIT_BAN:
       case self::BAN_LIST_BANS:
       case self::BAN_REMOVE_BAN:
       case self::BAN_VIEW_BAN:
         return $this->isAdmin();
         break;
     }
+
+    // If none of the above, deny access
+    return false;
   }
 
 }
