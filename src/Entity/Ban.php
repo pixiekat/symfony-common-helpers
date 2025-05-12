@@ -17,7 +17,7 @@ class Ban implements Interfaces\Entity\BanInterface {
   private string $ipAddress;
 
   #[ORM\Column(type: 'datetime_immutable', nullable: true)]
-  private \DateTimeImmutable $expiresAt;
+  private ?\DateTimeImmutable $expiresAt = null;
 
   use PixieTraits\EntityCreatedAtTrait;
 

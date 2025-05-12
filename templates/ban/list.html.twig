@@ -24,7 +24,21 @@
                   <td>{{ ban.ipAddress }}</td>
                   <td>{{ ban.createdAt|date('Y-m-d H:i:s') }}</td>
                   <td>{{ ban.expiresAt ? ban.expiresAt|date('Y-m-d H:i:s') : 'Never' }}</td>
-                  <td><a href="{{ path('pixiekat_symfony_helpers_ban_remove', { 'id': ban.id }) }}">Delete</a></td>
+                  <td>
+                    <div class="btn-group">
+                      <button class="btn btn-link btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Actions
+                      </button>
+                      <div class="dropdown-menu">
+                        {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\BanVoterInterface::BAN_EDIT_BAN'), ban) %}
+                          <a class="dropdown-item" href="{{ path('pixiekat_symfony_helpers_ban_edit', { 'id': ban.id }) }}">Edit</a>
+                        {% endif %}
+                        {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\BanVoterInterface::BAN_REMOVE_BAN'), ban) %}
+                          <a class="dropdown-item" href="{{ path('pixiekat_symfony_helpers_ban_remove', { 'id': ban.id }) }}">Delete</a>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </td>
                 </tr>
               {% endfor %}
             </tbody>

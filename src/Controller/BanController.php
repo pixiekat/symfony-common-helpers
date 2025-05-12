@@ -61,10 +61,10 @@ class BanController extends AbstractController {
 
   #[IsGranted(Interfaces\Security\Voter\BanVoterInterface::BAN_EDIT_BAN, 'ban')]
   #[Route('/edit/{id}', name: 'pixiekat_symfony_helpers_ban_edit')]
-  public function edit(Entity\Ban $ban): Response {
+  public function edit(Entity\Ban $ban, Request $request): Response {
     $form = $this->createForm(Form\BanForm::class, $ban);
 
-    $form->handleRequest($this->request);
+    $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
       try {
@@ -80,7 +80,6 @@ class BanController extends AbstractController {
     return $this->render('@PixiekatSymfonyHelpers/ban/edit.html.twig', [
       'ban' => $ban,
       'form' => $form->createView(),
-      'csrf_token' => $this->get('security.csrf.token_manager')->getToken('ban_edit')->getValue(),
     ]);
   }
 

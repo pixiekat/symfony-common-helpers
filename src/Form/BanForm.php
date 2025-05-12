@@ -36,7 +36,7 @@ class BanForm extends AbstractType {
         'required' => false,
       ])
       ->add('submit', FormTypes\SubmitType::class, [
-        'label' => 'Filter',
+        'label' => 'Save Ban',
         'attr' => [
           'class' => 'btn btn-primary',
         ],
