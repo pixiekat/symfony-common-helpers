@@ -21,7 +21,6 @@ final class BanVoter extends BaseVoter implements Interfaces\Security\Voter\BanV
   }
 
   protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool {
-    return true;
     $user = $token->getUser();
 
     if (!$user instanceof UserInterface) {
