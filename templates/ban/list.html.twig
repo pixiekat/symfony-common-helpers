@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Banned IP Addresses{% endblock %}
+
+{% block body %}
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <h1>Banned IP Addresses</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col text-end mb-3">
+        {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\BanVoterInterface::BAN_ADD_BAN')) %}
+          <a class="btn btn-primary" href="{{ path('pixiekat_symfony_helpers_ban_add') }}">Add New Ban</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="table">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>IP Address</th>
+                <th>Created At</th>
+                <th>Expires At</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ban in bans %}
+                <tr>
+                  <td>{{ ban.ipAddress }}</td>
+                  <td>{{ ban.createdAt|date('Y-m-d H:i:s') }}</td>
+                  <td>{{ ban.expiresAt ? ban.expiresAt|date('Y-m-d H:i:s') : 'Never' }}</td>
+                  <td>
+                    <div class="dropdown">
+                      <a class="btn btn-secondary btn-sm dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Actions
+                      </a>
+
+                      <ul class="dropdown-menu">
+                        {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\BanVoterInterface::BAN_EDIT_BAN'), ban) %}
+                          <li><a class="dropdown-item" href="{{ path('pixiekat_symfony_helpers_ban_edit', { 'id': ban.id }) }}">Edit</a></li>
+                        {% endif %}
+                        {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\BanVoterInterface::BAN_REMOVE_BAN'), ban) %}
+                          <li><a class="dropdown-item" href="{{ path('pixiekat_symfony_helpers_ban_remove', { 'id': ban.id }) }}">Delete</a></li>
+                        {% endif %}
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

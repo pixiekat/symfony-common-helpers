@@ -20,4 +20,20 @@ trait EntityEmailAddressTrait {
     return $this;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getEmail(): ?string {
+    return $this->getEmailAddress();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setEmail(string $email): static {
+    $this->setEmailAddress($email);
+
+    return $this;
+  }
+
 }

@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Banned IP Address{% endblock %}
+
+{% block body %}
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <h1>Edit Banned IP Address</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col text-end mb-3">
+        <a class="btn btn-secondary" href="{{ path('pixiekat_symfony_helpers_ban_list') }}">Back to List</a>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        {{ form_start(form) }}
+          {{ form(form) }}
+        {{ form_end(form) }}
+      </div>
+    </div>
+  </div>
+{% endblock %}
