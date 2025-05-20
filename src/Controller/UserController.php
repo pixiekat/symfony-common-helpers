@@ -15,7 +15,7 @@ class UserController extends AbstractController {
     private readonly Security $security,
   ) {}
 
-  #[Route('/login', name: 'app_login')]
+  #[Route('/login', name: 'pixiekat_symfony_helpers_login')]
   public function index(AuthenticationUtils $authenticationUtils): Response {
 
     if ($this->security->isGranted('IS_AUTHENTICATED')) {
