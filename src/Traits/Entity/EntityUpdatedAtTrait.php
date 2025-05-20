@@ -9,8 +9,8 @@ trait EntityUpdatedAtTrait {
   #[ORM\Column(name: 'updated_at', nullable: true)]
   private \DateTimeImmutable $updatedAt;
 
-  public function getUpdatedAt(): \DateTimeImmutable {
-    return $this->updatedAt ?? new \DateTimeImmutable;
+  public function getUpdatedAt(): ?\DateTimeImmutable {
+    return $this->updatedAt ?? null;
   }
 
   public function setUpdatedAt(\DateTimeImmutable $updatedAt): static {
