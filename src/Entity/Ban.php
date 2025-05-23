@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Pixiekat\SymfonyHelpers\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use Pixiekat\SymfonyHelpers\Interfaces;
 use Pixiekat\SymfonyHelpers\Repository;
 use Pixiekat\SymfonyHelpers\Repository\AuditLogRepository;
@@ -10,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Table(name: 'bans')]
 #[ORM\Entity(repositoryClass: Repository\BanRepository::class)]
+#[ApiResource]
 class Ban implements Interfaces\Entity\BanInterface {
   use PixieTraits\EntityIdTrait;
 
