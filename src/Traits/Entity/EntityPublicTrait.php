@@ -37,4 +37,11 @@ trait EntityPublicTrait {
     return $this;
   }
 
+  public function togglePrivacy(): self {
+    (bool) $this->isPublic === true
+      ? $this->markPrivate()
+      : $this->markPublic();
+    return $this;
+  }
+
 }
