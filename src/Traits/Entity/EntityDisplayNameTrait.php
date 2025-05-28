@@ -6,7 +6,7 @@ trait EntityDisplayNameTrait {
 
   public function getDisplayName($includeTitle = true): ?string {
     $name = [];
-    if (methodExists($this, 'getFirstName')) {
+    if (method_exists($this, 'getFirstName')) {
       $name[] = $this->getFirstName();
     }
     if (method_exists($this, 'getMiddleName')) {
