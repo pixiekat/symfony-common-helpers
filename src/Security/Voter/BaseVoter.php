@@ -29,13 +29,20 @@ abstract class BaseVoter extends Voter {
   /**
    * Checks if the user is an admin.
    */
-  public function isAdmin(): bool {
-    foreach (['ROLE_ADMIN', 'ROLE_SYSADMIN', 'ROLE_SUPER_ADMIN'] as $role) {
+  public function isSysAdmin(): bool {
+    foreach (['ROLE_SYSADMIN', 'ROLE_SUPER_ADMIN'] as $role) {
       if ($this->hasRole($role)) {
         return true;
       }
     }
     return false;
+  }
+
+  /**
+   * @deprecated See self::isSysAdmin()
+   */
+  public function isAdmin(): bool {
+    return $this->isSysAdmin();
   }
 
   /**
