@@ -64,6 +64,13 @@ abstract class BaseVoter extends Voter {
   }
 
   /**
+   * Checks if the user is the first user (UID = 1).
+   */
+  public function isFirstUser(): bool {
+    return $this->security->getUser()->id() == 1 ?? false;
+  }
+
+  /**
    * Gets a list of attributes that this voter supports.
    *
    * @return array
