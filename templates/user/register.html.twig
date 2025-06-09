@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'Register an Account'|trans }}{% endblock %}
+
+{% block body %}
+
+  <h1>{{ 'Register an Account'|trans }}</h1>
+
+  {% if form is defined and form is not null %}
+    {{ form(form) }}
+  {% endif %}
+
+{% endblock %}
