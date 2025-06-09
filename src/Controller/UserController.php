@@ -87,7 +87,7 @@ class UserController extends AbstractController {
   }
 
   #[IsGranted(PixieInterfaces\Security\Voter\LoginRegisterVoterInterface::LOGIN_REGISTER_REGISTER_ACCOUNT)]
-  #[Route('/register', name: 'pixiekat_symfony_helpers_register')]
+  #[Route('/user/register', name: 'pixiekat_symfony_helpers_register')]
   public function register(Request $request): Response {
     $user = new AppEntity\User();
     $user->deactivate(); // Ensure the user is active by default
