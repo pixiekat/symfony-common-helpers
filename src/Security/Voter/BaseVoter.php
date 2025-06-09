@@ -29,13 +29,20 @@ abstract class BaseVoter extends Voter {
   /**
    * Checks if the user is an admin.
    */
-  public function isAdmin(): bool {
-    foreach (['ROLE_ADMIN', 'ROLE_SYSADMIN', 'ROLE_SUPER_ADMIN'] as $role) {
+  public function isSysAdmin(): bool {
+    foreach (['ROLE_SYSADMIN', 'ROLE_SUPER_ADMIN'] as $role) {
       if ($this->hasRole($role)) {
         return true;
       }
     }
     return false;
+  }
+
+  /**
+   * @deprecated See self::isSysAdmin()
+   */
+  public function isAdmin(): bool {
+    return $this->isSysAdmin();
   }
 
   /**
@@ -54,6 +61,13 @@ abstract class BaseVoter extends Voter {
    */
   public function isAuthenticated(): bool {
     return $this->security->isGranted('ROLE_USER') ?? false;
+  }
+
+  /**
+   * Checks if the user is the first user (UID = 1).
+   */
+  public function isFirstUser(): bool {
+    return $this->security->getUser()->id() == 1 ?? false;
   }
 
   /**
