@@ -1,0 +1,9 @@
+<p>Dear {{ user.getDisplayName }},</p>
+
+<p>
+  Please confirm your email address by clicking the following link: <br><br>
+  <a href="{{ signedUrl|raw }}">Confirm my Email</a>.
+  This link will expire in {{ expiresAtMessageKey|trans(expiresAtMessageData, 'VerifyEmailBundle') }}.
+</p>
+
+<p>If you did not register an account with us, please feel free to contact us at <a href="mailto:help@alicantobidmc.org">help@alicantobidmc.org</a> or call (617) 278-8162.</p>

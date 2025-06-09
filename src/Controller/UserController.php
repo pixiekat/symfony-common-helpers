@@ -2,13 +2,17 @@
 declare(strict_types=1);
 namespace Pixiekat\SymfonyHelpers\Controller;
 
-use App\Entity;
+use App\Entity as AppEntity;
+use App\Repository as AppRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Pixiekat\SymfonyHelpers\Form as PixieForms;
 use Pixiekat\SymfonyHelpers\Interfaces as PixieInterfaces;
+use Pixiekat\SymfonyHelpers\Security as PixieSecurity;
 use Psr\Log\LoggerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Form as SymfonyForm;
 use Symfony\Component\Form\Extension\Core\Type as FormTypes;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,7 +34,8 @@ class UserController extends AbstractController {
     private readonly EntityManagerInterface $entityManager,
     private readonly LoggerInterface $logger,
     private readonly MailerInterface $mailer,
-    private readonly  ResetPasswordHelperInterface $resetPasswordHelper,
+    private readonly PixieSecurity\EmailVerifier $emailVerifier,
+    private readonly ResetPasswordHelperInterface $resetPasswordHelper,
     private readonly Security $security,
     private readonly TranslatorInterface $translator,
     private readonly UserPasswordHasherInterface $passwordHasher,
@@ -82,19 +87,128 @@ class UserController extends AbstractController {
   }
 
   #[IsGranted(PixieInterfaces\Security\Voter\LoginRegisterVoterInterface::LOGIN_REGISTER_REGISTER_ACCOUNT)]
-  #[Route('/user/register', name: 'pixiekat_symfony_helpers_register')]
+  #[Route('/register', name: 'pixiekat_symfony_helpers_register')]
   public function register(Request $request): Response {
-    $form = $this->createForm(PixieForms\RegistrationForm::class, null, [
-      'csrf_protection' => true,
+    $user = new AppEntity\User();
+    $user->deactivate(); // Ensure the user is active by default
+    $user->setCreatedAt(new \DateTimeImmutable());
+
+    $form = $this->createForm(PixieForms\RegistrationForm::class, $user, [
     ]);
     $form->handleRequest($request);
-    if ($form->isSubmitted() && $form->isValid()) {
 
+    if ($form->isSubmitted()) {
+      if ($form->has('cancel') && $form->get('cancel')->isClicked()) {
+        return $this->redirectToRoute('pixiekat_symfony_helpers_login');
+      }
+
+      $emailField = 'emailAddress';
+      $emailAddress = null;
+      if ($form->has('emailAddress')) {
+        $emailAddress = $form->get('emailAddress')->getData();
+      }
+      else if ($form->has('email')) {
+        $emailField = 'email';
+        $emailAddress = $form->get('email')->getData();
+      }
+
+      if ($emailAddress) {
+        $existingUser = $this->entityManager->getRepository(AppEntity\User::class)->findOneBy([$emailField => $emailAddress]);
+        if ($existingUser) {
+          $form->get($emailField)->addError(new SymfonyForm\FormError('This email address is already in use.'));
+        }
+
+        if (!empty($emailAddress) && method_exists(AppEntity\User::class, 'verifyEmailDomain') && !AppEntity\User::verifyEmailDomain($email)) {
+          $invalidEmailDomainError = $this->translator->trans('Registration is currently restricted to the following domains: %domains%', ['%domains%' => implode(', ', AppEntity\User::ALLOWED_REGISTERED_EMAIL_DOMAINS)]);
+          if ($form->has($emailField)) {
+            $form->get($emailField)->addError(new SymfonyForm\FormError($invalidEmailDomainError));
+          }
+          else {
+            $form->addError(new SymfonyForm\FormError($invalidEmailDomainError));
+          }
+        }
+      }
+    }
+
+    if ($form->isSubmitted() && $form->isValid()) {
+      try {
+        // encode the plain password
+        $user->setPassword(
+          $this->passwordHasher->hashPassword(
+            $user,
+            $form->get('password')->getData()
+          )
+        );
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        // generate a signed url and email it to the user
+        $this->emailVerifier->sendEmailConfirmation('pixiekat_symfony_helpers_verify_email', $user,
+          (new TemplatedEmail())
+            ->from('noreply@noreply.com')
+            ->to($user->getEmailAddress())
+            ->subject('Please Confirm Your Email Address')
+            ->htmlTemplate('@PixiekatSymfonyHelpers/user/confirm-email.html.twig')
+            ->context([
+              'user' => $user,
+            ])
+        );
+        $this->logger->info('User registered: ' . $user->getEmailAddress());
+        $this->addFlash('success', 'An email has been sent to verify your email address. Please check your email and click the link to confirm your email address.');
+        return $this->redirectToRoute('pixiekat_symfony_helpers_login');
+      }
+      catch (\Exception $e) {
+        $this->logger->error('An error occurred while registering the user: ' . $e->getMessage());
+        $this->addFlash('error', 'An error occurred during registration. Please try again: ' . $e->getMessage());
+      }
     }
 
     return $this->render('@PixiekatSymfonyHelpers/user/register.html.twig', [
-      'form' => $form->createView() ?? null,
+      'form' => $form->createView(),
     ]);
+  }
+
+  #[Route('/user/verify-email', name: 'pixiekat_symfony_helpers_verify_email')]
+  public function verifyUserEmail(Request $request, AppRepository\UserRepository $userRepository): Response {
+    $id = $request->query->get('id');
+
+    if (null === $id) {
+      $this->addFlash('error', 'An error occurred while verifying the email address.');
+      $this->logger->error('User not found for email verification: ' . $id);
+      return $this->redirectToRoute('pixiekat_symfony_helpers_register');
+    }
+
+    $identifier = 'email';
+    if (property_exists(AppEntity\User::class, 'emailAddress')) {
+      $identifier = 'emailAddress';
+    }
+    if (property_exists(AppEntity\User::class, 'uuid')) {
+      $identifier = $user->getUuid()->__toString();
+    }
+    $user = $userRepository->findOneBy([$identifier => $id]);
+
+    if (null === $user) {
+      $this->addFlash('error', 'An error occurred while verifying the email address.');
+      $this->logger->error('User not found for email verification: ' . $id);
+      return $this->redirectToRoute('pixiekat_symfony_helpers_register');
+    }
+
+    // validate email confirmation link, sets User::isVerified=true and persists
+    try {
+      $this->emailVerifier->handleEmailConfirmation($request, $user);
+    }
+    catch (VerifyEmailExceptionInterface $exception) {
+      $this->addFlash('error', $this->translator->trans($exception->getReason(), [], 'VerifyEmailBundle'));
+      $this->logger->error('An error occurred while verifying the email address: ' . $exception->getReason());
+
+      return $this->redirectToRoute('pixiekat_symfony_helpers_register');
+    }
+
+    $this->addFlash('success', 'Your email address has been verified.');
+    $this->logger->info('User email address verified: ' . $user->getEmailAddress());
+
+    return $this->redirectToRoute('pixiekat_symfony_helpers_login');
   }
 
   #[IsGranted('PUBLIC_ACCESS')]

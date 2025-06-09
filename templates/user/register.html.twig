@@ -7,7 +7,25 @@
   <h1>{{ 'Register an Account'|trans }}</h1>
 
   {% if form is defined and form is not null %}
-    {{ form(form) }}
+    {% if form.submit2 is defined %}
+      {% set submit_button = form_widget(form.submit) %}
+    {% endif %}
+    {% set form_cancel = form_widget(form.cancel) %}
+    <div data-turbo="false">
+      {{ form_start(form, {'attr': {'novalidate':'novalidate', 'class': 'form-horizontal'}}) }}
+        {{ form_errors(form) }}
+        {{ form(form) }}
+        <div class="btn-group">
+          {% if form_submit is defined %}
+            {{ form_submit|raw }}
+          {% endif %}
+          {{ form_cancel|raw }}
+          <a href="{{ path('pixiekat_symfony_helpers_password_reset') }}" class="btn btn-link">
+            {{ 'Forgot your password?'|trans }}
+          </a>
+        </div>
+      {{ form_end(form, {'render_rest': false}) }}
+    </div>
   {% endif %}
 
 {% endblock %}

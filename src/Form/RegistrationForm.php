@@ -26,6 +26,17 @@ final class RegistrationForm extends AbstractType {
         ],
         'label' => 'Email Address',
       ])
+      ->add('password', FormTypes\PasswordType::class, [
+        'attr' => [
+          'placeholder' => 'Enter password',
+          'class' => 'form-control',
+        ],
+        'constraints' => [
+          new Assert\NotBlank(),
+          new Assert\Length(['min' => 6]),
+        ],
+        'label' => 'Password',
+      ])
       ->add('firstName', FormTypes\TextType::class, [
         'attr' => [
           'placeholder' => 'Enter first name',
@@ -52,6 +63,12 @@ final class RegistrationForm extends AbstractType {
         'label' => 'Register Account',
         'attr' => [
           'class' => 'btn btn-primary',
+        ],
+      ])
+      ->add('cancel', FormTypes\SubmitType::class, [
+        'label' => 'Cancel',
+        'attr' => [
+          'class' => 'btn btn-link',
         ],
       ])
     ;
