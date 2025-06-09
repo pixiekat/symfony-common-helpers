@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Pixiekat\SymfonyHelpers\Traits\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use Doctrine\ORM\Mapping as ORM;
 
 trait EntityIdTrait {
