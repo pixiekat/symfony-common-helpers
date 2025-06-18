@@ -276,8 +276,8 @@ class UserController extends AbstractController {
 
     // The token is valid; allow the user to change their password.
     $form = $this->createFormBuilder([], ['csrf_protection' => true])
-      ->add('plainPassword', RepeatedType::class, [
-        'type' => PasswordType::class,
+      ->add('plainPassword', FormTypes\RepeatedType::class, [
+        'type' => FormTypes\PasswordType::class,
         'options' => [
           'attr' => [
             'autocomplete' => 'new-password',
@@ -285,10 +285,10 @@ class UserController extends AbstractController {
         ],
         'first_options' => [
           'constraints' => [
-            new NotBlank([
+            new Assert\NotBlank([
               'message' => 'Please enter a password',
             ]),
-            new Length([
+            new Assert\Length([
               'min' => 4,
               'minMessage' => 'Your password should be at least {{ limit }} characters',
               // max length allowed by Symfony for security reasons
@@ -305,10 +305,11 @@ class UserController extends AbstractController {
         // this is read and encoded in the controller
         'mapped' => false,
       ])
-      ->add('submit', SubmitType::class, [
+      ->add('submit', FormTypes\SubmitType::class, [
         'attr' => ['class' => 'btn btn-primary'],
         'label' => 'Change Password',
       ])
+      ->getForm()
     ;
 
     $form->handleRequest($request);
@@ -329,7 +330,7 @@ class UserController extends AbstractController {
       // The session is cleaned up after the password has been changed.
       $this->cleanSessionAfterReset();
 
-      return $this->redirectToRoute('user_login');
+      return $this->redirectToRoute('pixiekat_symfony_helpers_login');
     }
 
       return $this->render('@PixiekatSymfonyHelpers/user/reset-password.html.twig', [
@@ -372,17 +373,17 @@ class UserController extends AbstractController {
       }
 
       $email = (new TemplatedEmail())
-          ->from('BIDMCMedicineHMSappts@bidmc.harvard.edu')
+          ->from('help@alicantobidmc.org')
           ->to($user->getEmailAddress())
           ->subject('Your password reset request')
-          ->htmlTemplate('reset_password/email.html.twig')
+          ->htmlTemplate('@PixiekatSymfonyHelpers/user/reset-password-email.html.twig')
           ->context([
               'resetToken' => $resetToken,
               'user' => $user,
           ])
       ;
 
-      $mailer->send($email);
+      $this->mailer->send($email);
 
       // Store the token object in session for retrieval in check-email route.
       $this->setTokenObjectInSession($resetToken);
