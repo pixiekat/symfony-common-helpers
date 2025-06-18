@@ -119,7 +119,7 @@ class UserController extends AbstractController {
           $form->get($emailField)->addError(new SymfonyForm\FormError('This email address is already in use.'));
         }
 
-        if (!empty($emailAddress) && method_exists(AppEntity\User::class, 'verifyEmailDomain') && !AppEntity\User::verifyEmailDomain($email)) {
+        if (!empty($emailAddress) && method_exists(AppEntity\User::class, 'verifyEmailDomain') && !AppEntity\User::verifyEmailDomain($emailAddress)) {
           $invalidEmailDomainError = $this->translator->trans('Registration is currently restricted to the following domains: %domains%', ['%domains%' => implode(', ', AppEntity\User::ALLOWED_REGISTERED_EMAIL_DOMAINS)]);
           if ($form->has($emailField)) {
             $form->get($emailField)->addError(new SymfonyForm\FormError($invalidEmailDomainError));
