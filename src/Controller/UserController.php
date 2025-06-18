@@ -14,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form as SymfonyForm;
 use Symfony\Component\Form\Extension\Core\Type as FormTypes;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
@@ -338,18 +339,18 @@ class UserController extends AbstractController {
 
   private function processSendingPasswordResetEmail(string $emailFormData): RedirectResponse {
     $user = null;
-    $user = $this->entityManager->getRepository(Entity\User::class)->findOneBy([
+    $user = $this->entityManager->getRepository(AppEntity\User::class)->findOneBy([
       'emailAddress' => $emailFormData,
     ]);
     if (!$user) {
-      $user = $this->entityManager->getRepository(Entity\User::class)->findOneBy([
+      $user = $this->entityManager->getRepository(AppEntity\User::class)->findOneBy([
         'email' => $emailFormData,
       ]);
     }
 
       // Do not reveal whether a user account was found or not.
       if (!$user) {
-          return $this->redirectToRoute('app_check_email');
+          return $this->redirectToRoute('pixiekat_symfony_helpers_password_check_email');
       }
 
       try {
@@ -365,9 +366,9 @@ class UserController extends AbstractController {
           //     $translator->trans($e->getReason(), [], 'ResetPasswordBundle')
           // ));
           $this->addFlash('error', 'An error occurred. Please try again later.');
-          $this->appUtilities->getAppLogger()->error('An error occurred while sending the email: ' . $e->getReason());
+          $this->logger->error('An error occurred while sending the email: ' . $e->getReason());
 
-          return $this->redirectToRoute('app_check_email');
+          return $this->redirectToRoute('pixiekat_symfony_helpers_password_check_email');
       }
 
       $email = (new TemplatedEmail())
@@ -386,7 +387,7 @@ class UserController extends AbstractController {
       // Store the token object in session for retrieval in check-email route.
       $this->setTokenObjectInSession($resetToken);
 
-      return $this->redirectToRoute('app_check_email');
+      return $this->redirectToRoute('pixiekat_symfony_helpers_password_check_email');
   }
 
 }
