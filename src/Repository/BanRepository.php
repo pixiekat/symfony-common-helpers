@@ -6,6 +6,7 @@ use Pixiekat\SymfonyHelpers\Entity;
 use Pixiekat\SymfonyHelpers\Interfaces;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Psr\Log\LoggerInterface;
 
 /**
  * @extends ServiceEntityRepository<Entity\Ban>
@@ -15,7 +16,10 @@ class BanRepository extends ServiceEntityRepository {
   /**
    * {@inheritdoc}
    */
-  public function __construct(ManagerRegistry $registry) {
+  public function __construct(
+    ManagerRegistry $registry,
+    private readonly LoggerInterface $logger,
+  ) {
     parent::__construct($registry, Entity\Ban::class);
   }
 
@@ -37,7 +41,7 @@ class BanRepository extends ServiceEntityRepository {
   /**
    * Checks to see if a given IP address is banned.
    */
-  public function findIfIpBanned(string $ipAddress): ?Entity\Ban {
+  public function findIfIpBanned(string|array $ipAddress): ?Entity\Ban {
     $qb = $this->createQueryBuilder('b');
 
     $qb->andWhere(
@@ -47,9 +51,15 @@ class BanRepository extends ServiceEntityRepository {
       ),
     );
 
-    $qb->andWhere('b.ipAddress = :ipAddress');
+    if (is_string($ipAddress)) {
+      $qb->andWhere('b.ipAddress = :ipAddress');
+      $qb->setParameter('ipAddress', $ipAddress);
+    }
+    else if (is_array($ipAddress) && !empty($ipAddress)) {
+      $qb->andWhere('b.ipAddress IN (:ipAddresses)');
+      $qb->setParameter('ipAddresses', $ipAddress);
+    }
     $qb
-      ->setParameter('ipAddress', $ipAddress)
       ->setParameter('now', new \DateTimeImmutable());
     ;
 
