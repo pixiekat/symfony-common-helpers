@@ -14,6 +14,9 @@ class UrlHelperExtension extends AbstractExtension {
 
   public function getFunctions(): array {
     return [
+      new TwigFunction('generate_nf_icon', [UrlHelperExtensionRuntime::class, 'generateNerdFontIcon'], [
+        'is_safe' => ['html'],
+      ]),
       new TwigFunction('generate_link', [UrlHelperExtensionRuntime::class, 'generateUrl'], [
         'is_safe' => ['html'],
       ]),
