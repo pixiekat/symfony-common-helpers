@@ -9,6 +9,7 @@ use Pixiekat\SymfonyHelpers\Traits;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
@@ -20,7 +21,7 @@ final class BanVoter extends BaseVoter implements Interfaces\Security\Voter\BanV
     return in_array($attribute, $this->getAttributes()) && ($subject instanceof Entity\Ban || $subject === null);
   }
 
-  protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool {
+  protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool {
     $user = $token->getUser();
 
     if (!$user instanceof UserInterface) {

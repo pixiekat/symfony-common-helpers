@@ -9,6 +9,7 @@ use Pixiekat\SymfonyHelpers\Traits;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
@@ -18,7 +19,7 @@ final class LoginRegisterVoter extends BaseVoter implements Interfaces\Security\
     return in_array($attribute, $this->getAttributes());
   }
 
-  protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool {
+  protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool {
     $user = $token->getUser();
 
     switch ($attribute) {
