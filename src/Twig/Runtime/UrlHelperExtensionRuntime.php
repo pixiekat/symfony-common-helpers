@@ -16,11 +16,13 @@ class UrlHelperExtensionRuntime implements RuntimeExtensionInterface {
       $url = "http://" . $url;
     }
 
-    $rel = null;
+    $parts = [];
+    $parts[] = "href='{$url}'";
     if ($external) {
-      $rel = " rel='external'";
+      $parts[] = "rel='external'";
+      $parts[] = "target='_blank'";
     }
 
-    return "<a href='{$url}'{$rel}>{$title}</a>";
+    return "<a " . implode(" ", $parts) . ">{$title}</a>";
   }
 }
