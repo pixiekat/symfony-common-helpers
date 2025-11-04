@@ -24,3 +24,7 @@ services:
 
   Pixiekat\SymfonyHelpers\Services\AuditLogManager:
     arguments: ['@doctrine.orm.default_entity_manager']
+
+  Pixiekat\SymfonyHelpers\Services\LoggingManager:
+    arguments:
+      $availableChannels: '%pixiekat.logging.available_channels%'
