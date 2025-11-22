@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'Terms for Vocabulary: ' ~ vocabulary.name|trans }}{% endblock %}
+
+{% block body %}
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <h1>{{ 'Terms for Vocabulary: ' ~ vocabulary.name|trans }}</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col text-end mb-3">
+        <a href="{{ path('pixiekat_symfony_helpers_taxonomy_vocabulary_list') }}" class="btn btn-secondary">{{ 'Back to Vocabulary List'|trans }}</a>
+        {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_ADD_TERM_VOCABULARY')) %}
+          <a class="btn btn-primary" href="{{ path('pixiekat_symfony_helpers_taxonomy_term_add', { 'vocabulary': vocabulary.id }) }}">{{ 'Add New Term'|trans }}</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="table">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>{{ 'Name'|trans }}</th>
+                <th>{{ 'Action'|trans }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if terms is not empty %}
+                {% for term in terms %}
+                  <tr>
+                    <td>{{ term.name }}</td>                    <td>
+                      {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_EDIT_TERM_VOCABULARY'), vocabulary) %}
+                        <a class="btn btn-primary" href="{{ path('pixiekat_symfony_helpers_taxonomy_term_edit', { 'vocabulary': vocabulary.id, 'term': term.id }) }}">Edit</a>
+                      {% endif %}
+                      {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_REMOVE_TERM_VOCABULARY'), vocabulary) %}
+                        <a class="btn btn-danger" href="{{ path('pixiekat_symfony_helpers_taxonomy_term_delete', { 'vocabulary': vocabulary.id, 'term': term.id }) }}">Delete</a>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="4">{{ 'No terms found.'|trans }}</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'Add Term to Vocabulary' ~ vocabulary.name|trans }}{% endblock %}
+
+{% block body %}
+  <div class="container" data-turbo="false">
+    <div class="row">
+      <div class="col">
+        <h1>{{ 'Add Term to Vocabulary' ~ vocabulary.name|trans }}</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col text-end mb-3">
+        <a class="btn btn-secondary" href="{{ path('pixiekat_symfony_helpers_taxonomy_vocabulary_list') }}">{{ 'Back to List'|trans }}</a>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        {{ form_start(form) }}
+          {{ form(form) }}
+        {{ form_end(form) }}
+      </div>
+    </div>
+  </div>
+{% endblock %}

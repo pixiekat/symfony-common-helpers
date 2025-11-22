@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'Vocabulary Index'|trans }}{% endblock %}
+
+{% block body %}
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <h1>{{ 'Vocabulary Index'|trans }}</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col text-end mb-3">
+        {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_ADD_TERM_VOCABULARY')) %}
+          <a class="btn btn-primary" href="{{ path('pixiekat_symfony_helpers_taxonomy_vocabulary_add') }}">{{ 'Add New Vocabulary'|trans }}</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="table">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>{{ 'Label'|trans }}</th>
+                <th>{{ 'Name'|trans }}</th>
+                <th>{{ 'Description'|trans }}</th>
+                <th>{{ 'Action'|trans }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if vocabularies is not empty %}
+                {% for vocabulary in vocabularies %}
+                  <tr>
+                    <td>{{ vocabulary.labelName }}</td>
+                    <td>{{ vocabulary.name }}</td>
+                    <td>{{ vocabulary.description }}</td>
+                    <td>
+                      {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_EDIT_TERM_VOCABULARY'), vocabulary) %}
+                        <a class="btn btn-primary" href="{{ path('pixiekat_symfony_helpers_taxonomy_vocabulary_edit', { 'vocabulary': vocabulary.id }) }}">Edit</a>
+                      {% endif %}
+                      <a class="btn btn-secondary" href="{{ path('pixiekat_symfony_helpers_taxonomy_term_list', { 'vocabulary': vocabulary.id }) }}">{{ 'View Terms'|trans }}</a>
+                      {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_REMOVE_TERM_VOCABULARY'), vocabulary) %}
+                        {#<li><a class="dropdown-item" href="{{ path('pixiekat_symfony_helpers_taxonomy_vocabulary_remove', { 'vocabulary': vocabulary.id }) }}">Delete</a></li>#}
+                      {% endif %}
+                      <a class="btn btn-danger" href="{{ path('pixiekat_symfony_helpers_taxonomy_vocabulary_delete', { 'vocabulary': vocabulary.id }) }}">Delete</a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="4">{{ 'No vocabularies found.'|trans }}</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
