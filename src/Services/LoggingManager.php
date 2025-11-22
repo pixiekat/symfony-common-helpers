@@ -20,8 +20,7 @@ class LoggingManager {
   public function logToChannel(string $channel, string $level, string $message, array $context = []): void {
     try {
       /** @var LoggerInterface $logger */
-      $logger = $this->container->get("monolog.logger.$channel");
-      $logger->log($level, $message, $context);
+      $this->container->get("monolog.logger.$channel")->log($level, $message, $context);
     } catch (ServiceNotFoundException) {
       $this->logger->log($level, "[fallback:$channel] $message", $context);
     }
