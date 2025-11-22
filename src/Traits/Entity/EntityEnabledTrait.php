@@ -7,8 +7,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 trait EntityEnabledTrait {
 
-  #[ORM\Column(name: 'is_enabled', length: 1, nullable: false)]
-  protected ?bool $enabled = true;
+  #[ORM\Column(name: 'is_enabled', type: Types::BOOLEAN, nullable: false, options: ['default' => true])]
+  private ?bool $enabled = true;
 
   public function disable(): ?static {
     $this->enabled = false;
@@ -16,8 +16,8 @@ trait EntityEnabledTrait {
     return $this;
   }
 
-  public function disabled(): ?int {
-    return $this->enabled === false ? 1 : 0;
+  public function disabled(): ?bool {
+    return $this->enabled === false;
   }
 
   public function enable(): ?static {
@@ -26,22 +26,26 @@ trait EntityEnabledTrait {
     return $this;
   }
 
-  public function enabled(): ?int {
-    return $this->enabled === true ? 1 : 0;
+  public function enabled(): ?bool {
+    return $this->enabled === true;
   }
 
-  public function isDisabled(): ?int {
+  public function isDisabled(): ?bool {
     return $this->disabled();
   }
 
-  public function isEnabled(): ?int {
+  public function isEnabled(): ?bool {
     return $this->enabled();
   }
 
-  public function setIsEnabled(bool $isEnabled): ?static {
+  public function setEnabled(bool $isEnabled): ?static {
     $this->enabled = $isEnabled;
 
     return $this;
+  }
+
+  public function setIsEnabled(?bool $isEnabled): ?static {
+    return $this->setEnabled($isEnabled);
   }
 
 }

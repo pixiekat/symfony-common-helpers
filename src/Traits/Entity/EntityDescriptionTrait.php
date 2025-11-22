@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 trait EntityDescriptionTrait {
 
-  #[ORM\Column(type: 'string', nullable: true)]
+  #[ORM\Column(type: 'text', nullable: true)]
   private mixed $description = null;
 
   /**
