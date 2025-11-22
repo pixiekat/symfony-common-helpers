@@ -29,7 +29,6 @@ class TaxonomyController extends AbstractController {
   #[Route('/vocabulary', name: 'pixiekat_symfony_helpers_taxonomy_vocabulary_list', methods: ['GET'])]
   public function vocabulary_list(): Response {
     $vocabularies = $this->entityManager->getRepository(Entity\Vocabulary::class)->findAllSortedByLabel();
-    dump($vocabularies);
     return $this->render('@PixiekatSymfonyHelpers/taxonomy/vocabulary_list.html.twig', [
       'vocabularies' => $vocabularies ?? [],
     ]);
@@ -69,7 +68,7 @@ class TaxonomyController extends AbstractController {
         $this->addFlash('error', 'An error occurred while creating the vocabulary.');
       }
       dump("redirecting to term list");
-      return $this->redirectToRoute('taxonomy_term_list', ['vocabulary' => $vocabulary->getID()]);
+      return $this->redirectToRoute('pixiekat_symfony_helpers_taxonomy_vocabulary_list', ['vocabulary' => $vocabulary->getID()]);
     }
 
     return $this->render('@PixiekatSymfonyHelpers/taxonomy/vocabulary_add.html.twig', [
@@ -77,7 +76,7 @@ class TaxonomyController extends AbstractController {
     ]);
   }
 
-  #[Route('/vocabulary/{vocabulary}', name: 'pixiekat_symfony_helpers_taxonomy_vocabulary_edit', methods: ['GET', 'PUT'])]
+  #[Route('/vocabulary/{vocabulary}', name: 'pixiekat_symfony_helpers_taxonomy_vocabulary_edit', methods: ['GET', 'PUT', 'POST'])]
   public function vocabulary_edit(
     #[MapEntity(mapping: ['vocabulary' => 'id'])] Entity\Vocabulary $vocabulary,
     Request $request,
@@ -107,7 +106,7 @@ class TaxonomyController extends AbstractController {
         $this->addFlash('error', 'An error occurred while creating the vocabulary.');
       }
 
-      return $this->redirectToRoute('pixiekat_symfony_helpers_taxonomy_term_list', ['id' => $vocabulary->getID()]);
+      return $this->redirectToRoute('pixiekat_symfony_helpers_taxonomy_vocabulary_list', ['vocabulary' => $vocabulary->getID()]);
     }
 
     return $this->render('@PixiekatSymfonyHelpers/taxonomy/vocabulary_edit.html.twig', [

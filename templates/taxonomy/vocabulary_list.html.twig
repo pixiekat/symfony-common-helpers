@@ -39,11 +39,17 @@
                       {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_EDIT_TERM_VOCABULARY'), vocabulary) %}
                         <a class="btn btn-primary" href="{{ path('pixiekat_symfony_helpers_taxonomy_vocabulary_edit', { 'vocabulary': vocabulary.id }) }}">Edit</a>
                       {% endif %}
-                      <a class="btn btn-secondary" href="{{ path('pixiekat_symfony_helpers_taxonomy_term_list', { 'vocabulary': vocabulary.id }) }}">{{ 'View Terms'|trans }}</a>
+                      {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_LIST_TERMS'), vocabulary) %}
+                        <a class="btn btn-secondary" href="{{ path('pixiekat_symfony_helpers_taxonomy_term_list', { 'vocabulary': vocabulary.id }) }}">{{ 'View Terms'|trans }}</a>
+                      {% endif %}
                       {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_REMOVE_TERM_VOCABULARY'), vocabulary) %}
                         {#<li><a class="dropdown-item" href="{{ path('pixiekat_symfony_helpers_taxonomy_vocabulary_remove', { 'vocabulary': vocabulary.id }) }}">Delete</a></li>#}
                       {% endif %}
-                      <a class="btn btn-danger" href="{{ path('pixiekat_symfony_helpers_taxonomy_vocabulary_delete', { 'vocabulary': vocabulary.id }) }}">Delete</a>
+                      {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_REMOVE_TERM_VOCABULARY')) %}
+                        {% if not vocabulary.isLocked %}
+                          <a class="btn btn-danger" href="{{ path('pixiekat_symfony_helpers_taxonomy_vocabulary_delete', { 'vocabulary': vocabulary.id }) }}">Delete</a>
+                        {% endif %}
+                      {% endif %}
                     </td>
                   </tr>
                 {% endfor %}
