@@ -11,6 +11,10 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Table(name: 'bans')]
 #[ORM\Entity(repositoryClass: Repository\BanRepository::class)]
+#[ORM\Cache(
+  usage: 'READ_ONLY',
+  region: 'default_entity_region'
+)]
 #[ApiResource]
 class Ban implements Interfaces\Entity\BanInterface {
   use PixieTraits\EntityIdTrait;

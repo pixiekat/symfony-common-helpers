@@ -10,6 +10,10 @@ use SymfonyCasts\Bundle\ResetPassword\Model\ResetPasswordRequestInterface;
 use SymfonyCasts\Bundle\ResetPassword\Model\ResetPasswordRequestTrait;
 
 #[ORM\Entity(repositoryClass: ResetPasswordRequestRepository::class)]
+#[ORM\Cache(
+  usage: 'READ_ONLY',
+  region: 'default_entity_region'
+)]
 class ResetPasswordRequest extends BaseEntity implements ResetPasswordRequestInterface {
   use ResetPasswordRequestTrait;
   use PixieTraits\Entity\EntityIdTrait;
