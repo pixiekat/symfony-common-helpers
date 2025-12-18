@@ -25,6 +25,9 @@
                 <th>{{ 'Label'|trans }}</th>
                 <th>{{ 'Name'|trans }}</th>
                 <th>{{ 'Description'|trans }}</th>
+                <th>{{ 'Locked'|trans }}</th>
+                <th>{{ 'Enabled'|trans }}</th>
+                <th>{{ 'Number of Terms'|trans }}</th>
                 <th>{{ 'Action'|trans }}</th>
               </tr>
             </thead>
@@ -35,15 +38,18 @@
                     <td>{{ vocabulary.labelName }}</td>
                     <td>{{ vocabulary.name }}</td>
                     <td>{{ vocabulary.description }}</td>
+                    <td>{{ vocabulary.locked ? 'Locked'|trans : 'Unlocked'|trans }}</td>
+                    <td>{{ vocabulary.enabled ? 'Enabled'|trans : 'Disabled'|trans }}</td>
+                    <td>{{ vocabulary.terms|length }}</td>
                     <td>
                       {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_EDIT_TERM_VOCABULARY'), vocabulary) %}
                         <a class="btn btn-primary" href="{{ path('pixiekat_symfony_helpers_taxonomy_vocabulary_edit', { 'vocabulary': vocabulary.id }) }}">Edit</a>
                       {% endif %}
                       {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_LIST_TERMS'), vocabulary) %}
-                        <a class="btn btn-secondary" href="{{ path('pixiekat_symfony_helpers_taxonomy_term_list', { 'vocabulary': vocabulary.id }) }}">{{ 'View Terms'|trans }}</a>
+                        <a class="btn btn-primary" href="{{ path('pixiekat_symfony_helpers_taxonomy_term_list', { 'vocabulary': vocabulary.id }) }}">{{ 'View Terms'|trans }}</a>
                       {% endif %}
-                      {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_REMOVE_TERM_VOCABULARY'), vocabulary) %}
-                        {#<li><a class="dropdown-item" href="{{ path('pixiekat_symfony_helpers_taxonomy_vocabulary_remove', { 'vocabulary': vocabulary.id }) }}">Delete</a></li>#}
+                      {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_ADD_TERM_VOCABULARY')) %}
+                        <a class="btn btn-primary" href="{{ path('pixiekat_symfony_helpers_taxonomy_term_add', { 'vocabulary': vocabulary.id }) }}">{{ 'Add New Term to Vocabulary %vocabulary'|trans({'%vocabulary': vocabulary.labelName}) }}</a>
                       {% endif %}
                       {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_REMOVE_TERM_VOCABULARY')) %}
                         {% if not vocabulary.isLocked %}
@@ -55,7 +61,7 @@
                 {% endfor %}
               {% else %}
                 <tr>
-                  <td colspan="4">{{ 'No vocabularies found.'|trans }}</td>
+                  <td colspan="6">{{ 'No vocabularies found.'|trans }}</td>
                 </tr>
               {% endif %}
             </tbody>

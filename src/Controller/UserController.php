@@ -63,14 +63,14 @@ class UserController extends AbstractController {
   #[Route('/logout', name: 'pixiekat_symfony_helpers_logout')]
   #[IsGranted('PUBLIC_ACCESS')]
   public function logout(AuthenticationUtils $authenticationUtils): Response {
-    try {
+    /*try {
       $user = $authenticationUtils->getLastAuthenticatedUser();
       $this->logger->info('User logged out.', ['user' => $user->getDisplayName()]);
     }
     catch (\Exception $e) {
       $this->logger->info('User logged out.');
     }
-
+    */
     return $this->redirectToRoute('<front>');
   }
 
@@ -92,7 +92,7 @@ class UserController extends AbstractController {
   public function register(Request $request): Response {
     $user = new AppEntity\User();
     $user->deactivate(); // Ensure the user is active by default
-    $user->setCreatedAt(new \DateTimeImmutable());
+    $user->setCreatedAt(new \DateTime());
 
     $form = $this->createForm(PixieForms\RegistrationForm::class, $user, [
     ]);
