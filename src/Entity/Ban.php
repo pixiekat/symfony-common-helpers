@@ -10,6 +10,7 @@ use Pixiekat\SymfonyHelpers\Traits\Entity as PixieTraits;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Table(name: 'bans')]
+#[ORM\Index(name: 'idx_ip_address', columns: ['ip_address'])]
 #[ORM\Entity(repositoryClass: Repository\BanRepository::class)]
 #[ORM\Cache(
   usage: 'READ_ONLY',
