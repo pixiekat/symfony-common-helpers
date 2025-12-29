@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Pixiekat\SymfonyHelpers\Traits\Repository;
 
 trait CacheableFindByTrait {
-  public function findBy(array $criteria, ?array $orderBy = null, ?int $limit = null, ?int $offset = null): array {
+  public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null): array {
     $query = $this->createQueryBuilder('t')
       ->setCacheable(true)
     ;
