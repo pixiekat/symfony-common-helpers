@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/admin/taxonomy')]
+#[Route('/admincp/taxonomy')]
 #[IsGranted(Interfaces\Security\Voter\TaxonomyVoterInterface::TAXONOMY_ADMINISTER, message: 'You do not have permission to administer taxonomy.')]
 class TaxonomyController extends AbstractController {
 
