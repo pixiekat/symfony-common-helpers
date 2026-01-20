@@ -14,7 +14,21 @@ trait EntityRolesTrait {
    */
   public function getRoles(): array {
     $roles = $this->roles;
-    $roles[] = 'ROLE_USER';
+
+    // UID = 1 always has ROLE_SUPER_ADMIN
+    if (method_exists($this, 'getId') && $this->getId() === 1) {
+      $roles[] = 'ROLE_SUPER_ADMIN';
+    }
+
+    // if user has "TEST" in their last name, give them ROLE_TESTER
+    if (method_exists($this, 'getLastName') && str_contains($this->getLastName(), 'TEST')) {
+      $roles[] = 'ROLE_TESTER';
+    }
+
+    // guarantee every user at least has ROLE_USER
+    if (empty($roles)) {
+      $roles[] = 'ROLE_USER';
+    }
     return array_unique($roles);
   }
 
