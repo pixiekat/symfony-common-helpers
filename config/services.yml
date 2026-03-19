@@ -19,9 +19,6 @@ services:
     public: true
     tags: ['controller.service_arguments']
 
-  Pixiekat\SymfonyHelpers\Services\TranslationLoader:
-    arguments: ['../translations']
-
   Pixiekat\SymfonyHelpers\Services\AuditLogManager:
     arguments: ['@doctrine.orm.default_entity_manager']
 
