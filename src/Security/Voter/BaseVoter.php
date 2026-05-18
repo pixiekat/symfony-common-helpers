@@ -2,12 +2,12 @@
 declare(strict_types=1);
 namespace Pixiekat\SymfonyHelpers\Security\Voter;
 
-use Symfony\Bundle\SecurityBundle\Security;
 use Pixiekat\SymfonyHelpers\Traits as PixieTraits;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Core\Authorization\Voter\Voter;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\Voter;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 abstract class BaseVoter extends Voter {
 
@@ -23,7 +23,7 @@ abstract class BaseVoter extends Voter {
    * @return boolean
    */
   public function hasRole(string $role): bool {
-    return $this->security->isGranted($role) ?? false;
+    return $this->security->isGranted($role);
   }
 
   /**
@@ -51,7 +51,7 @@ abstract class BaseVoter extends Voter {
    * @return boolean
    */
   public function isAnonymous(): bool {
-    return !$this->security->isGranted('ROLE_USER') ?? false;
+    return !$this->security->isGranted('ROLE_USER');
   }
 
   /**
@@ -60,14 +60,18 @@ abstract class BaseVoter extends Voter {
    * @return boolean
    */
   public function isAuthenticated(): bool {
-    return $this->security->isGranted('ROLE_USER') ?? false;
+    return $this->security->isGranted('ROLE_USER');
   }
 
   /**
    * Checks if the user is the first user (UID = 1).
    */
   public function isFirstUser(): bool {
-    return $this->security->getUser()->id() == 1 ?? false;
+    $user = $this->security->getUser();
+    if ($user === null) {
+      return false;
+    }
+    return method_exists($user, 'getId') && $user->getId() === 1;
   }
 
   /**
