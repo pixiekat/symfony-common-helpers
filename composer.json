@@ -23,7 +23,7 @@
     },
     "license": "proprietary",
     "require": {
-        "php": "^8.2 || ^8.3 || ^8.4",
+        "php": "^8.2 || ^8.3 || ^8.4 || ^8.5",
         "symfony/framework-bundle": "^6.4 || >=7.0",
         "symfonycasts/reset-password-bundle": "^1.22",
         "symfonycasts/verify-email-bundle": "^1.14"
@@ -32,4 +32,3 @@
         "kint-php/kint": "^6.0"
     }
 }
-
