@@ -20,3 +20,16 @@ Save and Reset: Save and Reset
 Save and Apply: Save and Apply
 Save and Export: Save and Export
 Save and Import: Save and Import
+
+# Lists
+back_to_list: 'Back to List'
+
+# Bans
+bans:
+    add_new: 'Add New Ban'
+    add:
+        title: 'Add Banned IP Address'
+    edit:
+        title: 'Edit Banned IP Address: %ip_address%'
+    list:
+        title: 'Banned IP Addresses List'

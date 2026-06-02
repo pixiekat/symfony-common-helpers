@@ -1,17 +1,17 @@
 {% extends '@PixiekatSymfonyHelpers/admin_layout.html.twig' %}
 
-{% block title %}Edit Banned IP Address{% endblock %}
+{% block title %}{{ parent() }} - {{ 'bans.edit.title'|trans({'%ip_address%': ban.getIpAddress }) }}{% endblock %}
 
 {% block body %}
   <div class="container">
     <div class="row">
       <div class="col">
-        <h1>Edit Banned IP Address</h1>
+        <h1>{{ 'bans.edit.title'|trans({'%ip_address%': ban.getIpAddress }) }}</h1>
       </div>
     </div>
     <div class="row">
       <div class="col text-end mb-3">
-        <a class="btn btn-secondary" href="{{ path('pixiekat_symfony_helpers_ban_list') }}">Back to List</a>
+        <a class="btn btn-secondary" href="{{ path('pixiekat_symfony_helpers_ban_list') }}">{{ 'back_to_list'|trans }}</a>
       </div>
     </div>
     <div class="row">

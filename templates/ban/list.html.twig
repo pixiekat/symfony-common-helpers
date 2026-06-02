@@ -2,17 +2,22 @@
 
 {% block title %}Banned IP Addresses{% endblock %}
 
+{% block stylesheets %}
+  {{ parent() }}{# keep the layout/shell's own styles; we only ADD ban.css #}
+  <link rel="stylesheet" href="{{ asset('bundles/pixiekatsymfonyhelpers/styles/ban.css') }}">
+{% endblock %}
+
 {% block body %}
   <div class="container">
     <div class="row">
       <div class="col">
-        <h1>Banned IP Addresses</h1>
+        <h1>{{ 'bans.list.title'|trans }}</h1>
       </div>
     </div>
     <div class="row">
       <div class="col text-end mb-3">
         {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\BanVoterInterface::BAN_ADD_BAN')) %}
-          <a class="btn btn-primary" href="{{ path('pixiekat_symfony_helpers_ban_add') }}">Add New Ban</a>
+          <a class="btn btn-primary" href="{{ path('pixiekat_symfony_helpers_ban_add') }}">{{ 'bans.add_new'|trans }}</a>
         {% endif %}
       </div>
     </div>
@@ -34,7 +39,7 @@
                   <td>{{ ban.ipAddress }}</td>
                   <td>{{ ban.createdAt|date('Y-m-d H:i:s') }}</td>
                   <td>{{ ban.expiresAt ? ban.expiresAt|date('Y-m-d H:i:s') : 'Never' }}</td>
-                  <td>
+                  <td class="table-actions">
                     <div class="dropdown">
                       <a class="btn btn-secondary btn-sm dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Actions
