@@ -1,0 +1,15 @@
+{#
+ # Layout seam for the bundle's ADMIN-facing pages (ban/*, taxonomy/*).
+ #
+ # By default it just passes through to the host application's base.html.twig,
+ # so the bundle works out of the box with no host configuration.
+ #
+ # A consuming app can re-skin EVERY admin page at once by overriding this single
+ # template at:
+ #     templates/bundles/PixiekatSymfonyHelpersBundle/admin_layout.html.twig
+ # and pointing it at its own admin shell, e.g. `{% extends 'admincp/base.html.twig' %}`.
+ #
+ # Public/auth pages (user/*) deliberately do NOT use this seam — they extend
+ # base.html.twig directly — so re-skinning admin never affects them.
+ #}
+{% extends 'base.html.twig' %}
