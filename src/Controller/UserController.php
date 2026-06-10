@@ -18,15 +18,16 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\ResetPassword\Controller\ResetPasswordControllerTrait;
 use SymfonyCasts\Bundle\ResetPassword\Exception\ResetPasswordExceptionInterface;
 use SymfonyCasts\Bundle\ResetPassword\ResetPasswordHelperInterface;
+use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 
 class UserController extends AbstractController {
   use ResetPasswordControllerTrait;
@@ -171,39 +172,16 @@ class UserController extends AbstractController {
   }
 
   #[Route('/user/verify-email', name: 'pixiekat_symfony_helpers_verify_email')]
-  public function verifyUserEmail(Request $request, AppRepository\UserRepository $userRepository): Response {
-    $id = $request->query->get('id');
+  public function verifyUserEmail(Request $request): Response {
+    $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-    if (null === $id) {
-      $this->addFlash('error', 'An error occurred while verifying the email address.');
-      $this->logger->error('User not found for email verification: ' . $id);
-      return $this->redirectToRoute('pixiekat_symfony_helpers_register');
-    }
-
-    $identifier = 'email';
-    if (property_exists(AppEntity\User::class, 'emailAddress')) {
-      $identifier = 'emailAddress';
-    }
-    if (property_exists(AppEntity\User::class, 'uuid')) {
-      $identifier = $user->getUuid()->__toString();
-    }
-    $user = $userRepository->findOneBy([$identifier => $id]);
-
-    if (null === $user) {
-      $this->addFlash('error', 'An error occurred while verifying the email address.');
-      $this->logger->error('User not found for email verification: ' . $id);
-      return $this->redirectToRoute('pixiekat_symfony_helpers_register');
-    }
-
-    // validate email confirmation link, sets User::isVerified=true and persists
+    // validate email confirmation link, set User::$isVerified=true, and persist
     try {
-      $this->emailVerifier->handleEmailConfirmation($request, $user);
-    }
-    catch (VerifyEmailExceptionInterface $exception) {
-      $this->addFlash('error', $this->translator->trans($exception->getReason(), [], 'VerifyEmailBundle'));
-      $this->logger->error('An error occurred while verifying the email address: ' . $exception->getReason());
+        $this->emailVerifier->handleEmailConfirmation($request, $this->getUser());
+    } catch (VerifyEmailExceptionInterface $exception) {
+        $this->addFlash('verify_email_error', $this->translator->trans($exception->getReason(), [], 'VerifyEmailBundle'));
 
-      return $this->redirectToRoute('pixiekat_symfony_helpers_register');
+        return $this->redirectToRoute('pixiekat_symfony_helpers_register');
     }
 
     $this->addFlash('success', 'Your email address has been verified.');

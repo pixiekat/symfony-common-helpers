@@ -65,9 +65,17 @@ final class EmailVerifier {
    * @throws VerifyEmailExceptionInterface
    */
   public function handleEmailConfirmation(Request $request, AppEntity\User $user): void {
-    $identifier = $user->getEmail();
-    if (method_exists($user, 'getUuid')) {
+    if (method_exists($user, 'getEmail')) {
+        $identifier = $user->getEmail();
+    }
+    elseif (method_exists($user, 'getEmailAddress')) {
+         $identifier = $user->getEmailAddress();
+    }
+    elseif (method_exists($user, 'getUuid')) {
       $identifier = $user->getUuid()->__toString();
+    }
+    else {
+        throw new \LogicException('User entity must have getEmail() or getEmailAddress() method');
     }
     $this->verifyEmailHelper->validateEmailConfirmationFromRequest($request, $identifier, $user->getEmailAddress());
 
