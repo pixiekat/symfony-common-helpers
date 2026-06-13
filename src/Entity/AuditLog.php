@@ -21,7 +21,9 @@ class AuditLog implements Interfaces\Entity\AuditLogInterface {
   #[ORM\Column(type: 'string', nullable: false)]
   private string $performedBy;
 
-  #[ORM\Column(type: 'array', nullable: true)]
+  // DBAL 4 removed the legacy 'array' type (PHP serialize()). 'json' is the
+  // drop-in replacement for an array of scalar audit data.
+  #[ORM\Column(type: 'json', nullable: true)]
   private array $additionalData = [];
 
   #[ORM\Column(name: 'created_at', type: 'datetime_immutable', nullable: false)]
