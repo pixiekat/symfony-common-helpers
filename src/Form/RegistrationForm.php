@@ -33,7 +33,7 @@ final class RegistrationForm extends AbstractType {
         ],
         'constraints' => [
           new Assert\NotBlank(),
-          new Assert\Length(['min' => 6]),
+          //new Assert\Length(['min' => 6]),
         ],
         'label' => 'Password',
       ])
