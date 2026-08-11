@@ -1,0 +1,117 @@
+{#
+  The control panel shell — a vBulletin 3 AdminCP, rebuilt for 2026.
+  ==================================================================
+
+  Generic on purpose: this template knows about a header, a left-hand menu, a
+  content panel and a footer, and nothing about any particular application. The
+  skin lives in Resources/public/styles/admin-cp.css, which documents what is
+  faithful to vB3 and what was deliberately modernised (the type scale, the lack
+  of a frameset, the measured contrast).
+
+  ── How an app uses it ─────────────────────────────────────────────────────
+  Write one thin layout in your own bundle and point every admin page at that,
+  rather than having each page extend this directly — then branding and menu are
+  declared once. In templates/admin/layout.html.twig in YOUR bundle:
+
+      {% extends '@PixiekatSymfonyHelpers/admin/cp_layout.html.twig' %}
+      {% set admin_nav_sections = [
+        {label: 'Users', links: [{route: 'admin_users_list', label: 'All users'}]},
+      ] %}
+      {% block admin_brand %}My App Control Panel{% endblock %}
+
+  (NB: the examples in this comment are illustrative text, not live code. Twig
+  comments do NOT nest, so nothing in here may contain a comment-close sequence
+  — a nested one ends this block early and turns the rest of the file into live
+  template code, which fails with a syntax error a long way from the cause.)
+
+  A top-level {% set %} in a child template runs before the parent renders, and
+  the parent's blocks see it — which is what makes the menu declarable as data
+  without this template needing to know any route names. If you would rather
+  build the menu some other way (from the database, from a voter-filtered list),
+  override {% block admin_nav %} instead and ignore the variable entirely.
+
+  ── The existing seam ──────────────────────────────────────────────────────
+  This bundle's own admin pages (ban/*, taxonomy/*) go through
+  @PixiekatSymfonyHelpers/admin_layout.html.twig, which passes straight to the
+  host's base.html.twig so the bundle works with no configuration. An app that
+  wants those pages inside the control panel too overrides that one seam — put
+  this in templates/bundles/PixiekatSymfonyHelpersBundle/admin_layout.html.twig:
+
+      {% extends '@PixiekatSymfonyHelpers/admin/cp_layout.html.twig' %}
+
+  That is why the shell is a NEW template rather than being poured into the seam:
+  adopting it stays a decision the app makes, and the zero-config default holds.
+
+  ── Blocks ─────────────────────────────────────────────────────────────────
+    admin_brand         header bar text            (default: "Control Panel")
+    admin_page_title    <title> AND the panel's title bar — named once, used twice
+    admin_header_links  right side of the header   (default: empty)
+    admin_nav           the left menu              (default: renders admin_nav_sections)
+    content             the page itself
+    admin_footer        the footer line
+#}
+{% extends 'base.html.twig' %}
+
+{% block title %}{% block admin_page_title %}Control Panel{% endblock %} · {{ block('admin_brand') }}{% endblock %}
+
+{% block stylesheets %}
+  {# parent() first, so the host app's own stylesheets load and the control panel
+     skin comes after them — later rules win, which is the order an app expects
+     when it adds a stylesheet of its own on top of this one. #}
+  {{ parent() }}
+  <link rel="stylesheet" href="{{ asset('bundles/pixiekatsymfonyhelpers/styles/admin-cp.css') }}">
+{% endblock %}
+
+{% block body %}
+  {# First focusable thing on the page. With the menu ahead of the content in the
+     DOM — and on a narrow screen that means literally above it — a keyboard or
+     screen reader user needs one keystroke past it. #}
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <div class="vb-page">
+    <div class="vb-header">
+      {# <h1> here rather than on the content panel: the control panel is the
+         page, and the panel title below is a section within it. That keeps the
+         document outline h1 → h2 instead of starting at h2 or repeating h1. #}
+      <h1>{% block admin_brand %}Control Panel{% endblock %}</h1>
+      <div class="vb-header__meta">
+        {% block admin_header_links %}{% endblock %}
+      </div>
+    </div>
+
+    <div class="vb-body">
+      {% block admin_nav %}
+        {#
+          `only` keeps the partial's contract explicit: it receives these two
+          variables and nothing else, so it cannot quietly start depending on
+          something that happens to be in scope in one app and not another.
+        #}
+        {% include '@PixiekatSymfonyHelpers/admin/_cp_nav.html.twig' with {
+          sections: admin_nav_sections|default([]),
+          current_route: app.request.attributes.get('_route'),
+        } only %}
+      {% endblock %}
+
+      <main id="main" class="vb-content">
+        <h2 class="vb-content__title">{{ block('admin_page_title') }}</h2>
+
+        <div class="vb-content__inner">
+          {#
+            Flash messages, at the top of the content panel where the eye lands
+            after a redirect. role=alert for errors so they interrupt; role=status
+            for the rest so they are announced politely, after the current phrase.
+          #}
+          {% for label, messages in app.flashes(['success', 'error', 'info', 'danger', 'warning']) %}
+            {% for message in messages %}
+              <p class="flash flash--{{ label }}" role="{{ label in ['error', 'danger'] ? 'alert' : 'status' }}">{{ message }}</p>
+            {% endfor %}
+          {% endfor %}
+
+          {% block content %}{% endblock %}
+        </div>
+      </main>
+    </div>
+
+    <p class="vb-footer">{% block admin_footer %}{{ block('admin_brand') }}{% endblock %}</p>
+  </div>
+{% endblock %}
