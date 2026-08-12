@@ -1,0 +1,47 @@
+{#
+  The control panel's left-hand menu.
+
+  Expects:
+    sections      — a list of {label, links: [{route, label, also: [...]}, ...]}
+    current_route — app.request.attributes.get('_route'), passed in rather than
+                    read here so this partial has no dependency on the request
+
+  ── Why the menu is DATA and not markup ────────────────────────────────────
+  Adding a screen becomes one line in an array instead of six lines of nested
+  <li>, and — the part that actually matters — the "are we on this page?" test
+  is written once and applied identically to every link. Hand-repeated
+  highlighting logic is exactly the sort of thing that goes stale on the one
+  entry nobody remembered to update.
+
+  `also` lists extra routes belonging to the same entry. An edit screen usually
+  has no menu item of its own, but while you are on it the list it came from is
+  where you are, and the menu should say so.
+
+  ── The accessibility of "you are here" ────────────────────────────────────
+  aria-current="page" is what a screen reader announces; the bold weight and the
+  inset bar are what a sighted reader sees. Neither is colour alone, so the cue
+  survives both a colour-blind reader and a high-contrast mode.
+
+  Sections are <details open>: they collapse with no JavaScript whatsoever,
+  which is what vB3 needed a script for. Open by default because a menu that
+  hides itself on arrival is a menu you have to fight.
+#}
+<nav class="vb-nav" aria-label="Control panel sections">
+  {% for section in sections %}
+    <details class="vb-nav__section" open>
+      <summary>{{ section.label }}</summary>
+      <ul>
+        {% for link in section.links %}
+          {% set is_current = current_route == link.route or current_route in (link.also ?? []) %}
+          <li>
+            <a href="{{ path(link.route, link.params ?? {}) }}"
+               class="{{ is_current ? 'is-current' : '' }}"
+               {% if is_current %}aria-current="page"{% endif %}>
+              {{ link.label }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </details>
+  {% endfor %}
+</nav>

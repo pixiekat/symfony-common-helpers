@@ -1,0 +1,285 @@
+/*
+ * admin-cp.css — the control panel skin.
+ * ======================================
+ *
+ * A vBulletin 3 AdminCP, rebuilt for 2026. Shipped by
+ * pixiekat/symfony-common-helpers so every app that boots the bundle gets the
+ * same control panel shell; the app supplies only its branding and its menu.
+ *
+ * Paired with @PixiekatSymfonyHelpers/admin/cp_layout.html.twig, which provides
+ * the markup these rules expect. Served through AssetMapper as
+ *     bundles/pixiekatsymfonyhelpers/styles/admin-cp.css
+ * following the same convention as ban.css.
+ *
+ * ── What is faithful to vB3 ─────────────────────────────────────────────────
+ * The visual language, which is the part worth keeping: navy "tcat" title bars,
+ * the mid-blue "thead" row, alternating alt1/alt2 table stripes, a thin dark
+ * rule boxing every panel, and a persistent left-hand menu of collapsible
+ * sections. The palette is vB3's default Blue style almost exactly —
+ * #22229C / #5C5C99 / #F5F5FF / #E1E1E1.
+ *
+ * ── What is deliberately NOT faithful ───────────────────────────────────────
+ * 1. No frameset. vB3's AdminCP was two <frame>s, which broke bookmarking, the
+ *    back button, deep links and screen reader navigation all at once. The
+ *    layout is one document using CSS grid, so every page has its own URL.
+ * 2. The type is bigger. vB3 shipped 11px Verdana; this uses ~15px in rem units
+ *    that honour the reader's own font size setting. Small fixed-pixel type is
+ *    the most common reason an interface is unusable for older eyes, and
+ *    nostalgia is not worth that. The FACE is Verdana/Tahoma, and that is what
+ *    actually carries the period feel — not the size.
+ * 3. No layout tables. vB3 nested tables for structure; here tables are only
+ *    ever data. A screen reader announces a data table's rows and columns
+ *    usefully and a layout table's uselessly.
+ * 4. Contrast was measured, not assumed. White on #5C5C99 is 5.9:1 and white on
+ *    #22229C is 11.5:1 — both clear WCAG AA. The one place vB3's palette failed
+ *    (light grey text on alt2) is replaced with a darker muted colour at 7.8:1.
+ *
+ * ── Re-skinning ─────────────────────────────────────────────────────────────
+ * Everything colour-related is a custom property on :root. An app that wants a
+ * different style loads its own stylesheet after this one and redeclares the
+ * handful of variables below — which is how vB styles worked, and it beats
+ * overriding fifty selectors.
+ */
+
+/* ── Palette ─────────────────────────────────────────────────────────────── */
+:root {
+  --vb-page:    #e1e1e1;  /* the grey page behind everything */
+  --vb-panel:   #ffffff;
+  --vb-border:  #0b198c;  /* "tborder" — the thin dark rule around panels */
+  --vb-tcat:    #22229c;  /* "tcat"   — section title bars */
+  --vb-tcat-hi: #3c3cb4;  /* lighter partner, for the gradient */
+  --vb-thead:   #5c5c99;  /* "thead"  — table column headers */
+  --vb-alt1:    #f5f5ff;  /* odd rows  */
+  --vb-alt2:    #e8e8f2;  /* even rows — nudged from vB's #E1E1E1 so the stripe
+                             stays visible against the page grey */
+  --vb-ink:     #10101a;
+  --vb-muted:   #4a4a5a;  /* 7.8:1 on alt1; vB's grey was far too light */
+  --vb-link:    #22229c;
+  --vb-focus:   #ff9900;
+  --vb-ok:      #1a8a44;
+  --vb-bad:     #c0392b;
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────
+   Verdana/Tahoma is what makes this read as vBulletin. The SIZE is modern: rem
+   units respect a reader who has set a larger default, which an 11px rule would
+   silently override. */
+body {
+  margin: 0;
+  background: var(--vb-page);
+  color: var(--vb-ink);
+  font: 0.95rem/1.5 Verdana, Tahoma, Geneva, sans-serif;
+}
+
+a { color: var(--vb-link); }
+a:hover { text-decoration: none; }
+
+/* Never remove a focus ring. This is a keyboard-heavy admin screen and the
+   outline is the only thing telling a keyboard user where they are. Orange
+   rather than the link navy, so it stands out against the navy furniture. */
+:focus-visible { outline: 3px solid var(--vb-focus); outline-offset: 1px; }
+
+.skip-link {
+  position: absolute; left: -999px; top: 0; z-index: 20;
+  background: var(--vb-panel); padding: .5rem 1rem; border: 2px solid var(--vb-border);
+}
+.skip-link:focus { left: .5rem; top: .5rem; }
+
+/* ── Page frame ───────────────────────────────────────────────────────────
+   max-width plus auto margins reproduces vB3's centred fixed-width feel without
+   the fixed width — it simply stops growing on a wide monitor. */
+.vb-page { max-width: 80rem; margin: 0 auto; padding: .75rem clamp(.5rem, 2vw, 1rem) 2rem; }
+
+/* The header bar. The gradient is the one flourish worth keeping: vB3 used a
+   tiled image for it, this is two colours and no HTTP request. */
+.vb-header {
+  background: linear-gradient(180deg, var(--vb-tcat-hi), var(--vb-tcat));
+  border: 1px solid var(--vb-border);
+  color: #fff;
+  padding: .6rem .9rem;
+  display: flex; flex-wrap: wrap; gap: .5rem 1rem;
+  align-items: baseline; justify-content: space-between;
+}
+.vb-header h1 { font-size: 1.15rem; margin: 0; letter-spacing: .02em; }
+.vb-header a { color: #fff; }
+.vb-header__meta { font-size: .85rem; display: flex; flex-wrap: wrap; gap: .75rem; }
+
+/* The two-column body. minmax(0, 1fr) on the content column is load-bearing: a
+   grid track defaults to a min-content floor, so a wide table would push the
+   column past the viewport instead of scrolling inside .table-wrap. */
+.vb-body {
+  display: grid;
+  grid-template-columns: minmax(11rem, 14rem) minmax(0, 1fr);
+  gap: .75rem; margin-top: .75rem; align-items: start;
+}
+
+/* ── Left navigation ──────────────────────────────────────────────────────
+   <details>/<summary>, so sections collapse with no JavaScript at all — which
+   is what vB3 needed a script for. */
+.vb-nav { display: flex; flex-direction: column; gap: .75rem; }
+.vb-nav__section { border: 1px solid var(--vb-border); background: var(--vb-panel); }
+
+/* The tcat bar doubles as the disclosure control. list-style:none kills the
+   default triangle so the ▸/▾ we draw can sit on the right, vB-style. */
+.vb-nav__section > summary {
+  background: linear-gradient(180deg, var(--vb-tcat-hi), var(--vb-tcat));
+  color: #fff; font-weight: bold; font-size: .85rem;
+  padding: .4rem .6rem; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  list-style: none;
+}
+.vb-nav__section > summary::-webkit-details-marker { display: none; }
+.vb-nav__section > summary::after { content: '▸'; font-size: .9em; }
+.vb-nav__section[open] > summary::after { content: '▾'; }
+
+.vb-nav ul { list-style: none; margin: 0; padding: 0; }
+.vb-nav li + li { border-top: 1px solid #d5d5e5; }
+.vb-nav li a {
+  display: block; padding: .4rem .6rem;
+  background: var(--vb-alt1); text-decoration: none; font-size: .9rem;
+}
+.vb-nav li a:hover { background: #e6e6ff; text-decoration: underline; }
+
+/* The current page, marked by weight and a left bar — NOT by colour alone. The
+   aria-current in the markup is what actually announces it. */
+.vb-nav li a.is-current {
+  background: #dcdcf5; font-weight: bold;
+  box-shadow: inset .25rem 0 0 var(--vb-tcat);
+}
+
+/* ── Content column ───────────────────────────────────────────────────────── */
+.vb-content {
+  border: 1px solid var(--vb-border); background: var(--vb-panel);
+  padding: 0 0 1rem; min-width: 0;
+}
+/* The panel's own tcat title bar — vB3 put one at the top of every screen. */
+.vb-content__title {
+  background: linear-gradient(180deg, var(--vb-tcat-hi), var(--vb-tcat));
+  color: #fff; font-size: 1rem; margin: 0; padding: .5rem .75rem;
+}
+.vb-content__inner { padding: .9rem .75rem 0; }
+/* A page-level <h1> is redundant with the title bar, so pages should start at
+   <h2>. These keep a sensible scale if one appears anyway. */
+.vb-content h1 { font-size: 1.2rem; margin: 0 0 .75rem; }
+.vb-content h2 { font-size: 1.05rem; margin: 1.25rem 0 .5rem; }
+.vb-content h3 { font-size: .95rem; margin: 1rem 0 .35rem; }
+
+.vb-footer { margin-top: .75rem; text-align: center; font-size: .8rem; color: var(--vb-muted); }
+
+/* ── Tables, the vB way ───────────────────────────────────────────────────
+   Styled by element rather than by class, so a page's existing plain <table>
+   markup picks this up with no changes. */
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; border: 1px solid var(--vb-border); }
+caption { text-align: left; color: var(--vb-muted); font-size: .85rem; padding: .3rem 0 .4rem; }
+thead th {
+  background: var(--vb-thead); color: #fff; text-align: left;
+  font-size: .85rem; padding: .4rem .5rem; white-space: nowrap;
+}
+tbody th, tbody td {
+  padding: .4rem .5rem; border-top: 1px solid #cfcfe0;
+  text-align: left; vertical-align: top; font-size: .9rem;
+}
+/* alt1 / alt2 striping — the single most recognisable vB table detail. */
+tbody tr:nth-child(odd)  { background: var(--vb-alt1); }
+tbody tr:nth-child(even) { background: var(--vb-alt2); }
+tbody tr:hover { background: #e6e6ff; }
+
+/* ── Controls ─────────────────────────────────────────────────────────────
+   vB3's buttons were chunky bevelled things; this keeps the shape and the navy
+   without the 1px bevel hacks. */
+button, .button, input[type="submit"] {
+  font: inherit; font-size: .9rem; padding: .35rem .75rem; cursor: pointer;
+  border: 1px solid var(--vb-border); border-radius: 2px;
+  text-decoration: none; display: inline-block; color: #fff;
+  background: linear-gradient(180deg, var(--vb-tcat-hi), var(--vb-tcat));
+}
+button:hover, .button:hover, input[type="submit"]:hover { background: var(--vb-tcat-hi); }
+.button--secondary { background: var(--vb-alt1); color: var(--vb-link); }
+.button--secondary:hover { background: #e6e6ff; }
+.button--danger { background: linear-gradient(180deg, #d9584a, var(--vb-bad)); border-color: #8a261b; }
+.button--danger:hover { background: #d9584a; }
+
+.actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0 0 1rem; }
+/* A form sitting inside a table cell next to other controls. */
+form.inline { display: inline; }
+
+/* Form controls, including whatever the Symfony form theme emits. */
+input[type="text"], input[type="email"], input[type="password"],
+input[type="number"], input[type="search"], input[type="url"],
+select, textarea {
+  font: inherit; font-size: .9rem; padding: .35rem .45rem; max-width: 100%;
+  border: 1px solid #8a8aa8; border-radius: 2px;
+  background: #fff; color: var(--vb-ink);
+}
+.field { margin: 0 0 .9rem; max-width: 32rem; }
+.field > label { display: block; font-weight: bold; font-size: .85rem; margin-bottom: .2rem; }
+.field input, .field select, .field textarea { width: 100%; }
+.field-help { font-size: .8rem; margin: .2rem 0 0; color: var(--vb-muted); }
+
+/* Symfony's form_div_layout wraps each row in a bare <div>. Scoped to the
+   content panel so it cannot reach the layout's own markup. */
+.vb-content form > div { margin: 0 0 .8rem; max-width: 32rem; }
+.vb-content form > div > label { display: block; font-weight: bold; font-size: .85rem; margin-bottom: .2rem; }
+.vb-content form ul { color: var(--vb-bad); font-size: .85rem; margin: .25rem 0; padding-left: 1.1rem; }
+
+/* ── Shared odds and ends ─────────────────────────────────────────────────── */
+.muted { color: var(--vb-muted); }
+.pagination { display: flex; gap: 1rem; align-items: center; margin: .9rem 0 0; font-size: .9rem; }
+
+/* Visible to screen readers, invisible on screen. Used to give repeated controls
+   ("Edit", "Delete") a distinguishable accessible name — a column of thirty
+   identically-named buttons is unusable in a screen reader. Clip rather than
+   display:none, which would remove it from the accessibility tree too. */
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+  white-space: nowrap; border: 0;
+}
+
+/* Status badges. The WORD always carries the meaning; the hue is a redundant
+   cue, because green/red is the pairing that collapses under deuteranopia. */
+.badge {
+  display: inline-block; padding: .05rem .4rem; border-radius: 2px;
+  border: 1px solid; font-size: .8rem; white-space: nowrap;
+}
+.badge--pending   { background: #fff7e6; border-color: #d9a300; color: #7a5b00; }
+.badge--running   { background: #e6f0ff; border-color: #0b5fff; color: #003bb3; }
+.badge--ok,
+.badge--completed,
+.badge--agree     { background: #e7f6ec; border-color: var(--vb-ok);  color: #0c5a2b; }
+.badge--bad,
+.badge--failed,
+.badge--disagree  { background: #fdeaea; border-color: var(--vb-bad); color: #8a261b; }
+
+/* Flash messages, styled as vB3's "standard error" / "redirect" boxes. */
+.flash {
+  border: 1px solid var(--vb-border); background: var(--vb-alt1);
+  padding: .5rem .75rem; margin: 0 0 .9rem; font-size: .9rem;
+}
+.flash--success { background: #e7f6ec; border-color: var(--vb-ok); }
+.flash--error, .flash--danger { background: #fdeaea; border-color: var(--vb-bad); }
+
+/* ── Narrow screens ───────────────────────────────────────────────────────
+   One column, and the nav's links reflow into wrapped chips so the menu costs a
+   couple of lines rather than a screenful of scrolling before the content
+   begins. The sections stay <details>, so they can still be collapsed by hand.
+
+   The breakpoint is in rem, not px, so it also trips for someone running a large
+   default font size — at which point the two-column layout is genuinely too
+   cramped, exactly as it is on a narrow screen. */
+@media (max-width: 52rem) {
+  .vb-body { grid-template-columns: 1fr; }
+  .vb-nav ul { display: flex; flex-wrap: wrap; gap: 1px; padding: 1px; background: #d5d5e5; }
+  .vb-nav li { flex: 1 1 9rem; }
+  .vb-nav li + li { border-top: 0; }
+  .vb-nav li a { text-align: center; }
+  .vb-nav li a.is-current { box-shadow: inset 0 .2rem 0 var(--vb-tcat); }
+}
+
+/* Paper does not need the navigation, and the navy bars waste a cartridge. */
+@media print {
+  .vb-nav, .vb-header__meta, .skip-link { display: none; }
+  .vb-content, .vb-header { border: 0; }
+  .vb-header { background: none; color: #000; }
+}
