@@ -22,6 +22,9 @@ trait EntityFlagsTrait {
   }
 
   public function setFlag(string $key, mixed $value): void {
+    // $flags starts as null, and relying on PHP to auto-vivify an array out of
+    // null is a deprecated-adjacent habit worth not having. Be explicit.
+    $this->flags ??= [];
     $this->flags[$key] = $value;
   }
 
@@ -30,7 +33,10 @@ trait EntityFlagsTrait {
   }
 
   public function hasFlag(string $key): bool {
-    return array_key_exists($key, $this->flags);
+    // Coalesce before the check: $flags is nullable, and array_key_exists()
+    // throws a TypeError on null rather than returning false, so calling
+    // hasFlag() on an entity that never had a flag set used to fatal.
+    return array_key_exists($key, $this->flags ?? []);
   }
 
   public static function getAvailableFlags(): array {

@@ -1,0 +1,17 @@
+{#
+  Standalone page for one shoutbox channel.
+
+  Extends layout.html.twig — the PUBLIC seam — not admin_layout.html.twig, so
+  re-skinning the admin never touches this page.
+
+  The body is a single place_shoutbox() call: the standalone page and an
+  embedded sidebar widget are then literally the same code, and a change to one
+  cannot fail to reach the other.
+#}
+{% extends '@PixiekatSymfonyHelpers/layout.html.twig' %}
+
+{% block title %}{{ 'Shoutbox'|trans }}{% endblock %}
+
+{% block body %}
+  {{ place_shoutbox(channel, { limit: 50, heading_level: 1 }) }}
+{% endblock %}

@@ -1,8 +1,9 @@
 {#
- # Layout seam for the bundle's ADMIN-facing pages (ban/*, taxonomy/*).
+ # Layout seam for the bundle's ADMIN-facing pages (ban/*, taxonomy/*, block/*,
+ # shoutbox/admin/*).
  #
- # By default it just passes through to the host application's base.html.twig,
- # so the bundle works out of the box with no host configuration.
+ # It extends the host application's base.html.twig, so the bundle works out of
+ # the box with no host configuration.
  #
  # A consuming app can re-skin EVERY admin page at once by overriding this single
  # template at:
@@ -11,5 +12,38 @@
  #
  # Public/auth pages (user/*) deliberately do NOT use this seam — they extend
  # base.html.twig directly — so re-skinning admin never affects them.
+ #
+ # ---------------------------------------------------------------------------
+ # NOTE FOR ADMIN TEMPLATES: override `admin_content`, NOT `body`.
+ #
+ # This layout claims `body` in order to wrap every admin screen in the section
+ # nav and the flash messages. A child template that overrides `body` replaces
+ # all of that and loses the nav — which is exactly what you want for a page
+ # that genuinely needs the full width, and exactly what you do not want the
+ # rest of the time.
+ # ---------------------------------------------------------------------------
  #}
 {% extends 'base.html.twig' %}
+
+{% block body %}
+  {{ include('@PixiekatSymfonyHelpers/_partials/_admin_nav.html.twig') }}
+
+  {#
+    Flashes live here rather than in each screen so that a controller can
+    redirect anywhere in the admin and trust its message will be shown.
+
+    role="alert" makes a screen reader announce the message when it appears
+    instead of leaving it to be discovered; the visually hidden prefix means the
+    success/failure distinction is not carried by colour alone.
+  #}
+  {% for type, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="alert alert-{{ type == 'error' ? 'danger' : type }}" role="alert">
+        <span class="visually-hidden">{{ (type == 'error' ? 'Error' : 'Success')|trans }}:</span>
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  {% block admin_content %}{% endblock %}
+{% endblock %}

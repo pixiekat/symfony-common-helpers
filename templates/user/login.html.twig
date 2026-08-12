@@ -12,11 +12,19 @@
         <p>Login to your account</p>
 
         <div data-turbo="false">
-            {{ form_start(form) }}
-            {{ form_row(form._username) }}
-            {{ form_row(form._password) }}
-            {{ form_rest(form) }}
-            {{ form_end(form, {'render_rest': false}) }}
+          <form action="{{ path('pixiekat_symfony_helpers_login') }}" method="post">
+            <label for="username">Email:</label>
+            <input type="text" id="username" name="_username" value="{{ last_username }}" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="_password" required>
+
+            {# If you want to control the URL the user is redirected to on success
+            <input type="hidden" name="_target_path" value="/account"> #}
+
+            <button type="submit">login</button>
+            <a href="{{ path('pixiekat_symfony_helpers_password_reset') }}" class="btn btn-link">{{ 'Forgot Password'|trans }}</a>
+          </form>
         </div>
       </div>
     </div>

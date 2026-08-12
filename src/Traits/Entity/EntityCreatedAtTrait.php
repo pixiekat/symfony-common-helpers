@@ -13,10 +13,7 @@ trait EntityCreatedAtTrait {
     return $this->createdAt ?? new \DateTimeImmutable;
   }
 
-  public function setCreatedAt(\DateTimeImmutable|\DateTime $createdAt): static {
-    if ($createdAt instanceof \DateTime) {
-      $createdAt = \DateTimeImmutable::createFromMutable($createdAt);
-    }
+  public function setCreatedAt(\DateTimeImmutable $createdAt): static {
     $this->createdAt = $createdAt;
 
     return $this;
@@ -24,9 +21,6 @@ trait EntityCreatedAtTrait {
 
   #[ORM\PrePersist]
   public function setCreatedAtValue(): void{
-    if (isset($this->createdAt)) {
-      return;
-    }
     $this->createdAt = new \DateTimeImmutable();
   }
 }

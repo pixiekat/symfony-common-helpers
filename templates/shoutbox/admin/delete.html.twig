@@ -1,0 +1,30 @@
+{% extends '@PixiekatSymfonyHelpers/admin_layout.html.twig' %}
+
+{% block title %}{{ 'Delete Shout'|trans }}{% endblock %}
+
+{% block admin_content %}
+  <div class="container" data-turbo="false">
+    <div class="row">
+      <div class="col">
+        <h1>{{ 'Delete Shout'|trans }}</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <p>{{ 'Are you sure you want to permanently delete this shout by %author%?'|trans({'%author%': shout.displayName}) }}</p>
+
+        {# Escaped, as everywhere. Never |raw a shout body, not even in admin. #}
+        <blockquote class="blockquote"><p>{{ shout.body }}</p></blockquote>
+
+        <p class="text-muted">
+          {{ 'This removes the row entirely. To hide a shout while keeping it for moderation history, edit it and set its status to Deleted instead.'|trans }}
+        </p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        {{ form(form) }}
+      </div>
+    </div>
+  </div>
+{% endblock %}

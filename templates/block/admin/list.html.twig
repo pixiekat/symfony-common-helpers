@@ -1,0 +1,82 @@
+{% extends '@PixiekatSymfonyHelpers/admin_layout.html.twig' %}
+
+{% set V = 'Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\BlockVoterInterface' %}
+
+{% block title %}{{ 'Blocks'|trans }}{% endblock %}
+
+{% block admin_content %}
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <h1>{{ 'Blocks'|trans }}</h1>
+        <p class="text-muted">
+          {{ 'Place a block in a template with place_block(\'machine_name\').'|trans }}
+        </p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col text-end mb-3">
+        {% if is_granted(constant(V ~ '::BLOCK_ADD')) %}
+          <a class="btn btn-primary" href="{{ path('pixiekat_symfony_helpers_block_add') }}">{{ 'Add New Block'|trans }}</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            {# A caption is the cheapest way to give a table an accessible name. #}
+            <caption class="visually-hidden">{{ 'All blocks, with their machine names and item counts'|trans }}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{{ 'Label'|trans }}</th>
+                <th scope="col">{{ 'Machine name'|trans }}</th>
+                <th scope="col">{{ 'Items'|trans }}</th>
+                <th scope="col">{{ 'Weight'|trans }}</th>
+                <th scope="col">{{ 'Status'|trans }}</th>
+                <th scope="col">{{ 'Action'|trans }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for block in blocks %}
+                <tr>
+                  <td>{{ block.label ?? '—' }}</td>
+                  <td><code>{{ block.name }}</code></td>
+                  <td>{{ block.items|length }}</td>
+                  <td>{{ block.weight }}</td>
+                  <td>
+                    {{ block.enabled ? 'Enabled'|trans : 'Disabled'|trans }}
+                    {%- if block.isLocked %}, {{ 'Locked'|trans }}{% endif %}
+                  </td>
+                  <td>
+                    {% if is_granted(constant(V ~ '::BLOCK_ITEM_LIST'), block) %}
+                      <a class="btn btn-sm btn-secondary" href="{{ path('pixiekat_symfony_helpers_block_item_list', { block: block.id }) }}">
+                        {{ 'Items'|trans }}<span class="visually-hidden"> {{ 'in %block%'|trans({'%block%': block.name}) }}</span>
+                      </a>
+                    {% endif %}
+                    {% if is_granted(constant(V ~ '::BLOCK_EDIT'), block) %}
+                      <a class="btn btn-sm btn-primary" href="{{ path('pixiekat_symfony_helpers_block_edit', { block: block.id }) }}">
+                        {{ 'Edit'|trans }}<span class="visually-hidden"> {{ block.name }}</span>
+                      </a>
+                    {% endif %}
+                    {% if is_granted(constant(V ~ '::BLOCK_DELETE'), block) %}
+                      <a class="btn btn-sm btn-danger" href="{{ path('pixiekat_symfony_helpers_block_delete', { block: block.id }) }}">
+                        {{ 'Delete'|trans }}<span class="visually-hidden"> {{ block.name }}</span>
+                      </a>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="6">{{ 'No blocks found.'|trans }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

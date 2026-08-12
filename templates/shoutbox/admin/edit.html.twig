@@ -1,0 +1,42 @@
+{% extends '@PixiekatSymfonyHelpers/admin_layout.html.twig' %}
+
+{% block title %}{{ 'Edit Shout'|trans }}{% endblock %}
+
+{% block admin_content %}
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <h1>{{ 'Edit Shout'|trans }}</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col text-end mb-3">
+        <a class="btn btn-secondary" href="{{ path('pixiekat_symfony_helpers_shout_list') }}">{{ 'Back to Shoutbox'|trans }}</a>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col mb-3">
+        {#
+          Read-only context. These are evidence, not fields: a moderation screen
+          that lets you rewrite when something was posted, or from where, is not
+          much use as a record of what happened.
+        #}
+        <dl class="row">
+          <dt class="col-sm-3">{{ 'Posted'|trans }}</dt>
+          <dd class="col-sm-9"><time datetime="{{ shout.createdAt|date('c') }}">{{ shout.createdAt|date('j F Y, H:i') }}</time></dd>
+
+          <dt class="col-sm-3">{{ 'Account'|trans }}</dt>
+          <dd class="col-sm-9">{{ shout.author ? shout.author.userIdentifier : 'Anonymous'|trans }}</dd>
+
+          <dt class="col-sm-3">{{ 'IP address'|trans }}</dt>
+          <dd class="col-sm-9"><code>{{ shout.ipAddress ?? '—' }}</code></dd>
+        </dl>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        {{ form(form) }}
+      </div>
+    </div>
+  </div>
+{% endblock %}

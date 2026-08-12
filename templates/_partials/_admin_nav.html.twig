@@ -1,0 +1,67 @@
+{#
+  Navigation across the bundle's admin sections.
+
+  Included by admin_layout.html.twig, so every admin screen gets it without each
+  template having to remember. Override it wholesale at:
+      templates/bundles/PixiekatSymfonyHelpersBundle/_partials/_admin_nav.html.twig
+  to add your application's own sections alongside these.
+
+  Each entry is permission-gated with the same voter attribute that guards the
+  route it points at. That matters for more than tidiness: a nav link to a page
+  that will just throw 403 is a small betrayal of the person clicking it, and
+  it is worse for someone navigating by keyboard or screen reader, who has to
+  travel the whole way there to find out.
+
+  ACCESSIBILITY
+  -------------
+  * <nav> carries an aria-label because a page may hold more than one nav
+    landmark; unlabelled ones are indistinguishable when listing landmarks.
+  * The current section is marked with aria-current="page", which is announced,
+    rather than being signalled by colour alone.
+#}
+{% set nav_items = [
+  {
+    label: 'Blocks',
+    route: 'pixiekat_symfony_helpers_block_list',
+    granted: is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\BlockVoterInterface::BLOCK_ADMINISTER')),
+    prefix: 'pixiekat_symfony_helpers_block',
+  },
+  {
+    label: 'Shoutbox',
+    route: 'pixiekat_symfony_helpers_shout_list',
+    granted: is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\ShoutboxVoterInterface::SHOUTBOX_ADMINISTER')),
+    prefix: 'pixiekat_symfony_helpers_shout',
+  },
+  {
+    label: 'Taxonomy',
+    route: 'pixiekat_symfony_helpers_taxonomy_vocabulary_list',
+    granted: is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_ADMINISTER')),
+    prefix: 'pixiekat_symfony_helpers_taxonomy',
+  },
+  {
+    label: 'Bans',
+    route: 'pixiekat_symfony_helpers_ban_list',
+    granted: is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\BanVoterInterface::BAN_LIST_BANS')),
+    prefix: 'pixiekat_symfony_helpers_ban',
+  },
+] %}
+
+{% set current_route = app.request is not null ? app.request.attributes.get('_route') : '' %}
+
+<nav class="admin-nav" aria-label="{{ 'Admin sections'|trans }}">
+  <ul class="nav nav-tabs mb-4">
+    {% for item in nav_items %}
+      {% if item.granted %}
+        {# Prefix match, so /blocks/3/items still highlights "Blocks". #}
+        {% set is_current = current_route starts with item.prefix %}
+        <li class="nav-item">
+          <a class="nav-link{{ is_current ? ' active' : '' }}"
+             href="{{ path(item.route) }}"
+             {%- if is_current %} aria-current="page"{% endif %}>
+            {{ item.label|trans }}
+          </a>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+</nav>

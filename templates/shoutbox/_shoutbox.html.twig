@@ -1,0 +1,83 @@
+{#
+  The shoutbox widget: recent shouts plus the post form.
+
+  Rendered by {{ place_shoutbox() }}. Override wholesale with the `template`
+  option, or file-by-file at:
+      templates/bundles/PixiekatSymfonyHelpersBundle/shoutbox/_shoutbox.html.twig
+
+  Available variables:
+    channel        The channel name.
+    shouts         Shout entities, newest first.
+    form           The post form view, or null if the visitor may not post.
+    return_path    Path of the page this widget is embedded in.
+    show_title     Whether the heading is visible.
+    heading_level  2..6 — the heading rank to use.
+    title          The heading text.
+    options        The full merged option array.
+
+  NO aria-live HERE, DELIBERATELY
+  ------------------------------
+  A live region tells assistive tech to announce content that changes WITHOUT a
+  page load. This list is server-rendered and only changes on navigation, so
+  marking it live would either do nothing or, under a Turbo morph, interrupt the
+  reader mid-sentence to re-read shouts they have already heard. If you later
+  add polling, that is the moment to add aria-live — not before.
+#}
+{% set box_id = 'shoutbox-' ~ channel|lower|replace({'_': '-'}) %}
+{% set title_id = box_id ~ '-title' %}
+
+<section class="shoutbox shoutbox--{{ channel|lower|replace({'_': '-'}) }}" aria-labelledby="{{ title_id }}">
+
+  <h{{ heading_level }} id="{{ title_id }}" class="shoutbox--title{% if not show_title %} visually-hidden{% endif %}">
+    {{ title|trans }}
+  </h{{ heading_level }}>
+
+  {#
+    Flashes are rendered here as well as in admin_layout, because the widget is
+    normally embedded in a public page that has no other flash outlet — this is
+    how a visitor finds out their shout was rejected.
+  #}
+  {% for type, messages in app.flashes(['success', 'error']) %}
+    {% for message in messages %}
+      <p class="shoutbox--notice shoutbox--notice-{{ type }}" role="alert">
+        <span class="visually-hidden">{{ (type == 'error' ? 'Error' : 'Success')|trans }}:</span>
+        {{ message }}
+      </p>
+    {% endfor %}
+  {% endfor %}
+
+  {% if form is not null %}
+    {{ form_start(form) }}
+      {% if form.authorName is defined %}
+        {{ form_row(form.authorName) }}
+      {% endif %}
+      {{ form_row(form.body) }}
+
+      {#
+        Where to send the visitor back to. Sits outside the form's field prefix
+        so it arrives as a plain top-level POST value, and is re-validated by
+        ShoutboxController before any redirect happens — a value that has been
+        through the browser is untrusted regardless of who put it there.
+      #}
+      {% if return_path %}
+        <input type="hidden" name="_return" value="{{ return_path }}">
+      {% endif %}
+
+      {{ form_row(form.submit) }}
+    {# form_end renders the CSRF token and anything else not output above. #}
+    {{ form_end(form) }}
+  {% endif %}
+
+  {% if shouts|length > 0 %}
+    <ol class="shoutbox--list">
+      {% for shout in shouts %}
+        <li class="shoutbox--entry">
+          {{ include('@PixiekatSymfonyHelpers/shoutbox/_shout.html.twig', { shout: shout }) }}
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p class="shoutbox--empty">{{ 'Nothing here yet. Be the first!'|trans }}</p>
+  {% endif %}
+
+</section>

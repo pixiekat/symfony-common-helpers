@@ -1,0 +1,23 @@
+{% extends '@PixiekatSymfonyHelpers/admin_layout.html.twig' %}
+
+{% block title %}{{ 'Add Block'|trans }}{% endblock %}
+
+{% block admin_content %}
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <h1>{{ 'Add Block'|trans }}</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col text-end mb-3">
+        <a class="btn btn-secondary" href="{{ path('pixiekat_symfony_helpers_block_list') }}">{{ 'Back to Blocks'|trans }}</a>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        {{ form(form) }}
+      </div>
+    </div>
+  </div>
+{% endblock %}

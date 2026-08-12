@@ -1,0 +1,27 @@
+{% extends '@PixiekatSymfonyHelpers/admin_layout.html.twig' %}
+
+{% block title %}{{ 'Edit Block: %block%'|trans({'%block%': block.name}) }}{% endblock %}
+
+{% block admin_content %}
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <h1>{{ 'Edit Block: %block%'|trans({'%block%': block.label ?? block.name}) }}</h1>
+        <p class="text-muted">
+          {{ 'Placed in templates with'|trans }} <code>{{ '{{ place_block(\'' ~ block.name ~ '\') }}' }}</code>
+        </p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col text-end mb-3">
+        <a class="btn btn-secondary" href="{{ path('pixiekat_symfony_helpers_block_list') }}">{{ 'Back to Blocks'|trans }}</a>
+        <a class="btn btn-secondary" href="{{ path('pixiekat_symfony_helpers_block_item_list', { block: block.id }) }}">{{ 'Items'|trans }}</a>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        {{ form(form) }}
+      </div>
+    </div>
+  </div>
+{% endblock %}

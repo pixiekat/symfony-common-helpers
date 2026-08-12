@@ -2,7 +2,7 @@
 
 {% block title %}{{ parent() }} - {{ 'bans.edit.title'|trans({'%ip_address%': ban.getIpAddress }) }}{% endblock %}
 
-{% block body %}
+{% block admin_content %}
   <div class="container">
     <div class="row">
       <div class="col">

@@ -1,0 +1,65 @@
+{#
+  Default block wrapper.
+
+  Rendered by Pixiekat\SymfonyHelpers\Services\BlockManager. Any block can opt
+  out of this markup entirely by setting its `template` field, or per-call with
+  {{ place_block('name', { template: '...' }) }} — a replacement template
+  receives exactly these variables, so it is a drop-in.
+
+  Available variables:
+    block        The Pixiekat\SymfonyHelpers\Entity\Block entity.
+    items        Enabled BlockItem entities, weight-ordered and limit-applied.
+    show_title   Whether the label should be visible (see the note below).
+    heading_level  2..6 — the heading rank to use for the title.
+    options      The full, merged option array, for custom templates to read.
+
+  ACCESSIBILITY NOTES
+  -------------------
+  * The wrapper is a <section> labelled by its own heading via aria-labelledby.
+    A <section> with no accessible name is ignored by screen readers, so the
+    label is what turns this into a real navigable landmark.
+  * show_title = false hides the heading VISUALLY but leaves it in the DOM.
+    Removing it outright would break the document outline and orphan the
+    aria-labelledby reference — a sighted-only tidy-up that costs screen reader
+    users their bearings. `.visually-hidden` needs to exist in your stylesheet
+    (clip-rect pattern); if you do not have it yet, that is the one bit of CSS
+    this template assumes.
+  * heading_level is configurable rather than hardcoded to <h2> because the
+    correct rank depends on where the developer placed the block. Heading ranks
+    should never skip a level.
+#}
+{% set block_id = block.name|lower|replace({'_': '-'}) %}
+{% set heading_level = heading_level|default(2) %}
+{% set title_id = 'block-' ~ block_id ~ '-title' %}
+
+<section class="block block--{{ block_id }}"
+  {%- if block.label %} aria-labelledby="{{ title_id }}"{% endif %}>
+
+  {% if block.label %}
+    <h{{ heading_level }} id="{{ title_id }}" class="block--title{% if not show_title %} visually-hidden{% endif %}">
+      {{ block.label }}
+    </h{{ heading_level }}>
+  {% endif %}
+
+  {#
+    The body is authored by you through an admin form, not submitted by
+    visitors, so it is printed as trusted markup. If you ever open block bodies
+    up to untrusted input, drop the |raw and run it through a sanitiser instead.
+  #}
+  {% if block.body is not empty %}
+    <div class="block--body">
+      {{ block.body|raw }}
+    </div>
+  {% endif %}
+
+  {% if items|length > 0 %}
+    <ul class="block--items">
+      {% for item in items %}
+        <li class="block--item block--item-{{ item.name|lower|replace({'_': '-'}) }}">
+          {{ include('@PixiekatSymfonyHelpers/block/_item.html.twig', { item: item, block: block }) }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+</section>

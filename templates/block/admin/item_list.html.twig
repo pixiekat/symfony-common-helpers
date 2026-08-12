@@ -1,0 +1,84 @@
+{% extends '@PixiekatSymfonyHelpers/admin_layout.html.twig' %}
+
+{% set V = 'Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\BlockVoterInterface' %}
+
+{% block title %}{{ 'Items in %block%'|trans({'%block%': block.name}) }}{% endblock %}
+
+{% block admin_content %}
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <h1>{{ 'Items in %block%'|trans({'%block%': block.label ?? block.name}) }}</h1>
+        <p class="text-muted">{{ 'Lower weights appear first.'|trans }}</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col text-end mb-3">
+        <a class="btn btn-secondary" href="{{ path('pixiekat_symfony_helpers_block_list') }}">{{ 'Back to Blocks'|trans }}</a>
+        {% if is_granted(constant(V ~ '::BLOCK_ITEM_ADD'), block) %}
+          <a class="btn btn-primary" href="{{ path('pixiekat_symfony_helpers_block_item_add', { block: block.id }) }}">{{ 'Add New Item'|trans }}</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <caption class="visually-hidden">{{ 'Items in this block, in render order'|trans }}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{{ 'Label'|trans }}</th>
+                <th scope="col">{{ 'Machine name'|trans }}</th>
+                <th scope="col">{{ 'URL'|trans }}</th>
+                <th scope="col">{{ 'Weight'|trans }}</th>
+                <th scope="col">{{ 'Status'|trans }}</th>
+                <th scope="col">{{ 'Action'|trans }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in items %}
+                <tr>
+                  <td>{{ item.label ?? '—' }}</td>
+                  <td><code>{{ item.name }}</code></td>
+                  <td>
+                    {% if item.isLink %}
+                      {#
+                        Truncated for the table; the full value is in the title
+                        attribute and on the edit screen. Done with slice rather
+                        than the u.truncate filter so the bundle does not depend
+                        on twig/string-extra being installed.
+                      #}
+                      <span title="{{ item.url }}">{{ item.url|slice(0, 48) }}{{ item.url|length > 48 ? '…' : '' }}</span>
+                    {% else %}
+                      <span class="text-muted">{{ 'Text only'|trans }}</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ item.weight }}</td>
+                  <td>{{ item.enabled ? 'Enabled'|trans : 'Disabled'|trans }}</td>
+                  <td>
+                    {% if is_granted(constant(V ~ '::BLOCK_ITEM_EDIT'), item) %}
+                      <a class="btn btn-sm btn-primary" href="{{ path('pixiekat_symfony_helpers_block_item_edit', { block: block.id, item: item.id }) }}">
+                        {{ 'Edit'|trans }}<span class="visually-hidden"> {{ item.name }}</span>
+                      </a>
+                    {% endif %}
+                    {% if is_granted(constant(V ~ '::BLOCK_ITEM_DELETE'), item) %}
+                      <a class="btn btn-sm btn-danger" href="{{ path('pixiekat_symfony_helpers_block_item_delete', { block: block.id, item: item.id }) }}">
+                        {{ 'Delete'|trans }}<span class="visually-hidden"> {{ item.name }}</span>
+                      </a>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="6">{{ 'No items yet. A block with no items and no body renders as nothing.'|trans }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

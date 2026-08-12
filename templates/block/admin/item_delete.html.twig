@@ -1,0 +1,23 @@
+{% extends '@PixiekatSymfonyHelpers/admin_layout.html.twig' %}
+
+{% block title %}{{ 'Delete Item: %item%'|trans({'%item%': item.name}) }}{% endblock %}
+
+{% block admin_content %}
+  <div class="container" data-turbo="false">
+    <div class="row">
+      <div class="col">
+        <h1>{{ 'Delete Item: %item%'|trans({'%item%': item.label ?? item.name}) }}</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <p>{{ 'Are you sure you want to delete the item "%item%" from the block "%block%"?'|trans({'%item%': item.name, '%block%': block.name}) }}</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        {{ form(form) }}
+      </div>
+    </div>
+  </div>
+{% endblock %}

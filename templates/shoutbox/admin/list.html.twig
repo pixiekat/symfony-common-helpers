@@ -1,0 +1,115 @@
+{% extends '@PixiekatSymfonyHelpers/admin_layout.html.twig' %}
+
+{% set V = 'Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\ShoutboxVoterInterface' %}
+
+{% block title %}{{ 'Shoutbox'|trans }}{% endblock %}
+
+{% block admin_content %}
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <h1>{{ 'Shoutbox'|trans }}</h1>
+        <p class="text-muted">{{ 'Every shout, including the ones hidden from the public view.'|trans }}</p>
+      </div>
+    </div>
+
+    {% if channels|length > 1 %}
+      {#
+        A GET form, because filtering is a query not a change — that keeps the
+        result bookmarkable and shareable, and stops a browser warning about
+        re-submission when someone hits back.
+      #}
+      <div class="row">
+        <div class="col mb-3">
+          <form method="get" action="{{ path('pixiekat_symfony_helpers_shout_list') }}" class="row row-cols-lg-auto g-2 align-items-center">
+            <div class="col">
+              <label class="form-label" for="channel-filter">{{ 'Channel'|trans }}</label>
+            </div>
+            <div class="col">
+              <select class="form-select" id="channel-filter" name="channel">
+                <option value="">{{ 'All channels'|trans }}</option>
+                {% for name in channels %}
+                  <option value="{{ name }}"{{ name == channel ? ' selected' : '' }}>{{ name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col">
+              {# A real submit button, so the filter works without JavaScript. #}
+              <button type="submit" class="btn btn-secondary">{{ 'Filter'|trans }}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="row">
+      <div class="col">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <caption class="visually-hidden">{{ 'Shouts awaiting moderation and already moderated'|trans }}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{{ 'When'|trans }}</th>
+                <th scope="col">{{ 'Author'|trans }}</th>
+                <th scope="col">{{ 'Message'|trans }}</th>
+                <th scope="col">{{ 'Channel'|trans }}</th>
+                <th scope="col">{{ 'IP'|trans }}</th>
+                <th scope="col">{{ 'Status'|trans }}</th>
+                <th scope="col">{{ 'Action'|trans }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for shout in shouts %}
+                <tr>
+                  <td>
+                    <time datetime="{{ shout.createdAt|date('c') }}">{{ shout.createdAt|date('j M Y H:i') }}</time>
+                  </td>
+                  <td>{{ shout.displayName }}</td>
+                  {# Escaped, like everywhere else. Moderators read hostile input more than anyone. #}
+                  <td>{{ shout.body }}</td>
+                  <td><code>{{ shout.channel }}</code></td>
+                  <td><code>{{ shout.ipAddress ?? '—' }}</code></td>
+                  <td>{{ shout.status.label|trans }}</td>
+                  <td>
+                    {#
+                      Status changes are POSTs, not links. A GET that changes
+                      state can be fired by anything that fetches a URL — a link
+                      prefetcher, an <img> on a hostile page, a mail client
+                      preview — so each button is its own tiny CSRF-token form.
+                    #}
+                    {% if is_granted(constant(V ~ '::SHOUT_MODERATE'), shout) %}
+                      {% for target in ['published', 'spam', 'deleted'] %}
+                        {% if shout.status.value != target %}
+                          <form method="post" action="{{ path('pixiekat_symfony_helpers_shout_status', { shout: shout.id, status: target }) }}" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('shout_status_' ~ shout.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                              {{ target|capitalize|trans }}<span class="visually-hidden"> {{ 'shout by %author%'|trans({'%author%': shout.displayName}) }}</span>
+                            </button>
+                          </form>
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                    {% if is_granted(constant(V ~ '::SHOUT_EDIT'), shout) %}
+                      <a class="btn btn-sm btn-primary" href="{{ path('pixiekat_symfony_helpers_shout_edit', { shout: shout.id }) }}">
+                        {{ 'Edit'|trans }}<span class="visually-hidden"> {{ 'shout by %author%'|trans({'%author%': shout.displayName}) }}</span>
+                      </a>
+                    {% endif %}
+                    {% if is_granted(constant(V ~ '::SHOUT_DELETE'), shout) %}
+                      <a class="btn btn-sm btn-danger" href="{{ path('pixiekat_symfony_helpers_shout_delete', { shout: shout.id }) }}">
+                        {{ 'Delete'|trans }}<span class="visually-hidden"> {{ 'shout by %author%'|trans({'%author%': shout.displayName}) }}</span>
+                      </a>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="7">{{ 'No shouts found.'|trans }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

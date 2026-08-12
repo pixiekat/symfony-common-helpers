@@ -1,0 +1,32 @@
+{% extends '@PixiekatSymfonyHelpers/admin_layout.html.twig' %}
+
+{% block title %}{{ 'Delete Block: %block%'|trans({'%block%': block.name}) }}{% endblock %}
+
+{% block admin_content %}
+  <div class="container" data-turbo="false">
+    <div class="row">
+      <div class="col">
+        <h1>{{ 'Delete Block: %block%'|trans({'%block%': block.label ?? block.name}) }}</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        {#
+          Spell out the consequences rather than asking a bare "are you sure?".
+          Deleting a block that a template still places leaves a hole in a page,
+          and the item count is the part people forget.
+        #}
+        <p>{{ 'Are you sure you want to delete the block "%block%"?'|trans({'%block%': block.name}) }}</p>
+        {% if block.items|length > 0 %}
+          <p><strong>{{ 'This will also delete %count% item(s) belonging to it.'|trans({'%count%': block.items|length}) }}</strong></p>
+        {% endif %}
+        <p>{{ 'Any template calling place_block(\'%block%\') will render nothing afterwards.'|trans({'%block%': block.name}) }}</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        {{ form(form) }}
+      </div>
+    </div>
+  </div>
+{% endblock %}

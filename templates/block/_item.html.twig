@@ -1,0 +1,64 @@
+{#
+  Default rendering for a single BlockItem.
+
+  Available variables:
+    item   The Pixiekat\SymfonyHelpers\Entity\BlockItem entity.
+    block  Its owning Block, for context.
+
+  Recognised flags (all optional, all set with $item->setFlag(...)):
+    wrapper_label  Text shown before the item, e.g. 'Made with'.
+    new_window     Open the link in a new tab. Off by default — see below.
+    rel            Extra rel tokens, appended to the safety ones.
+
+  GRACEFUL DEGRADATION
+  --------------------
+  An item without a URL renders as a <span> rather than a dead <a href="">.
+  That mirrors how the original hand-written social-links template behaved, and
+  it matters: an anchor with no destination is focusable, announced as a link,
+  and does nothing when activated.
+
+  ACCESSIBILITY: NEW WINDOWS
+  --------------------------
+  new_window defaults to FALSE deliberately, even though it is common to force
+  target="_blank" on outbound links. Opening a new window without warning is a
+  WCAG 3.2.5 (Change on Request) failure, and it breaks the browser Back button
+  — which disproportionately affects people using screen readers, screen
+  magnifiers, or simply anyone not expecting the context switch. When you do opt
+  in, the template appends a visually hidden warning so the change is announced.
+
+  rel="noopener noreferrer" is applied to every _blank link regardless: noopener
+  stops the opened page reaching back through window.opener, and noreferrer
+  keeps your URL out of the destination's analytics.
+#}
+{% set new_window = item.getFlag('new_window')|default(false) %}
+{% set wrapper_label = item.getFlag('wrapper_label')|default(null) %}
+{% set extra_rel = item.getFlag('rel')|default(null) %}
+
+<span class="block--item-inner">
+
+  {% if wrapper_label %}
+    <span class="block--item-prefix">{{ wrapper_label }}</span>
+  {% endif %}
+
+  {% if item.isLink %}
+    <a class="block--item-link"
+       href="{{ item.url }}"
+       {%- if new_window %} target="_blank" rel="noopener noreferrer{% if extra_rel %} {{ extra_rel }}{% endif %}"
+       {%- elseif extra_rel %} rel="{{ extra_rel }}"{% endif %}>
+      {% if item.icon %}
+        {# aria-hidden: the icon repeats the label, so announcing it twice is noise. #}
+        <span class="block--item-icon" aria-hidden="true">{{ item.icon }}</span>
+      {% endif %}
+      <span class="block--item-label">{{ item.label ?? item.url }}</span>
+      {% if new_window %}
+        <span class="visually-hidden">(opens in a new window)</span>
+      {% endif %}
+    </a>
+  {% else %}
+    {% if item.icon %}
+      <span class="block--item-icon" aria-hidden="true">{{ item.icon }}</span>
+    {% endif %}
+    <span class="block--item-label">{{ item.label }}</span>
+  {% endif %}
+
+</span>

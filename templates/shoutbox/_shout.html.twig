@@ -1,0 +1,35 @@
+{#
+  One shout.
+
+  Available variables:
+    shout  The Pixiekat\SymfonyHelpers\Entity\Shout entity.
+
+  ESCAPING
+  --------
+  {{ shout.body }} is printed WITHOUT |raw, and must stay that way. The body is
+  typed in by whoever is passing by, so it is the single most untrusted string
+  in the whole bundle. Twig's autoescaping is what stands between that and
+  stored XSS; |raw here would hand every visitor the ability to run script in
+  every other visitor's browser.
+
+  If you want limited formatting later, run the body through an allowlist
+  sanitiser (symfony/html-sanitizer) in a Twig filter — never by relaxing this.
+#}
+<article class="shout">
+  <header class="shout--meta">
+    <span class="shout--author">{{ shout.displayName }}</span>
+
+    {#
+      <time> with a machine-readable datetime gives assistive tech and any
+      future scripting an unambiguous timestamp, while the visible text stays
+      short. The title carries the full date for anyone who hovers.
+    #}
+    <time class="shout--time"
+          datetime="{{ shout.createdAt|date('c') }}"
+          title="{{ shout.createdAt|date('j F Y, H:i') }}">
+      {{ shout.createdAt|date('j M, H:i') }}
+    </time>
+  </header>
+
+  <p class="shout--body">{{ shout.body }}</p>
+</article>
