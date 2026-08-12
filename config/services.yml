@@ -19,9 +19,37 @@ services:
     public: true
     tags: ['controller.service_arguments']
 
+  # NOTE on the two definitions below: naming a service explicitly REPLACES the
+  # entry the `Services\` glob above created for it — attributes are not merged.
+  # So `public: true` and the controller.service_arguments tag have to be
+  # repeated here, or these two end up private and untagged while every other
+  # service in the same directory is public. The visible symptom is an action
+  # argument that cannot be autowired, or a container lookup that reports the
+  # service "has been removed or inlined".
   Pixiekat\SymfonyHelpers\Services\AuditLogManager:
-    arguments: ['@doctrine.orm.default_entity_manager']
+    public: true
+    tags: ['controller.service_arguments']
+    arguments:
+      # Named rather than positional: the constructor grew from one argument to
+      # five in the audit rework, and a bare positional list silently binds to
+      # whatever now happens to sit at index 0. Everything else autowires.
+      $entityManager: '@doctrine.orm.default_entity_manager'
 
   Pixiekat\SymfonyHelpers\Services\LoggingManager:
+    public: true
+    tags: ['controller.service_arguments']
     arguments:
+      # Symfony\Component\DependencyInjection\ContainerInterface is not an
+      # autowirable type — there is no service registered under that id — so it
+      # has to be named explicitly. This went unnoticed until AuditLogManager
+      # became the first thing to actually depend on LoggingManager; before that
+      # nothing ever asked the container to build it.
+      #
+      # Injecting the whole container is a blunt instrument. It is what the
+      # current design needs: logToChannel() looks up "monolog.logger.{$channel}"
+      # from a channel name known only at call time, and catches
+      # ServiceNotFoundException to fall back. If that ever wants tightening,
+      # the shape to reach for is a service locator of the monolog.logger.*
+      # services rather than the container itself.
+      $container: '@service_container'
       $availableChannels: '%pixiekat.logging.available_channels%'

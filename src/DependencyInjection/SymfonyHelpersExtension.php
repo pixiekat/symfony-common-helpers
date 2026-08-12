@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Pixiekat\SymfonyHelpers\DependencyInjection;
 
 use Pixiekat\SymfonyHelpers\Interfaces\Entity\HelpersUserInterface;
+use Pixiekat\SymfonyHelpers\Services\AuditLogManager;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -45,6 +46,8 @@ class SymfonyHelpersExtension extends Extension implements PrependExtensionInter
    *   opaque Doctrine mapping error a long way from the actual cause.
    */
   public function prepend(ContainerBuilder $container): void {
+    $this->prependMonologChannels($container);
+
     // Nothing to do if Doctrine is not installed. The taxonomy, logging and
     // utility helpers work fine without it, so this must not become a hard
     // requirement of using the bundle at all.
@@ -88,6 +91,49 @@ class SymfonyHelpersExtension extends Extension implements PrependExtensionInter
           HelpersUserInterface::class => $userClass,
         ],
       ],
+    ]);
+  }
+
+  /**
+   * Registers the Monolog channels this bundle logs to.
+   *
+   * AuditLogManager mirrors every entry to an 'audit' channel so the log file
+   * carries a record that no failing transaction can take back. That channel
+   * has to exist, and asking every consuming application to remember to declare
+   * it is exactly the kind of setup step that gets skipped — after which the
+   * audit trail quietly falls back to the default logger and mixes in with
+   * everything else.
+   *
+   * Prepended config merges UNDERNEATH the application's own, so an app that
+   * declares its own channels list keeps it; this only ensures 'audit' is
+   * present. Route it wherever you like from there:
+   *
+   *   monolog:
+   *     handlers:
+   *       audit:
+   *         type: rotating_file
+   *         path: '%kernel.logs_dir%/audit.log'
+   *         level: info
+   *         channels: ['audit']
+   *         max_files: 90
+   *
+   * MonologChannelCollectorPass will then pick it up, so it also shows in
+   * LoggingManager::getAvailableChannels().
+   *
+   * @param ContainerBuilder $container The container being built.
+   *
+   * @return void
+   */
+  private function prependMonologChannels(ContainerBuilder $container): void {
+    if (!$container->hasExtension('monolog')) {
+      // No Monolog: LoggingManager already falls back to the default logger
+      // when a channel is missing, so the audit mirror still gets written —
+      // just not to a channel of its own.
+      return;
+    }
+
+    $container->prependExtensionConfig('monolog', [
+      'channels' => [AuditLogManager::CHANNEL],
     ]);
   }
 

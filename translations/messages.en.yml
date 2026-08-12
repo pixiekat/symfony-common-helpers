@@ -33,3 +33,43 @@ bans:
         title: 'Edit Banned IP Address: %ip_address%'
     list:
         title: 'Banned IP Addresses List'
+
+# Audit log
+#
+# audit.action.* supplies the vB3-style sentence for each action key. The
+# placeholders available are %actor%, %action% and %target%.
+#
+# `default` is the fallback used for any action with no phrasing of its own, so
+# a newly logged action reads sensibly the moment it first appears — writing a
+# nicer phrasing is an improvement, never a prerequisite.
+#
+# Add an entry by naming it after the action key you passed to
+# AuditLogManager::log(), e.g. log('block.created', $block) -> audit.action.block.created
+audit:
+    action:
+        default: '%actor% performed %action% on %target%'
+        created: '%actor% created %target%'
+        updated: '%actor% updated %target%'
+        deleted: '%actor% deleted %target%'
+        user.created: '%actor% created the user %target%'
+        user.updated: '%actor% updated the user %target%'
+        user.deleted: '%actor% deleted the user %target%'
+        user.login: '%actor% logged in'
+        user.logout: '%actor% logged out'
+        user.password_reset: '%actor% reset the password for %target%'
+        ban.created: '%actor% banned %target%'
+        ban.deleted: '%actor% lifted the ban on %target%'
+        block.created: '%actor% created the block %target%'
+        block.updated: '%actor% updated the block %target%'
+        block.deleted: '%actor% deleted the block %target%'
+        block_item.created: '%actor% added the block item %target%'
+        block_item.updated: '%actor% updated the block item %target%'
+        block_item.deleted: '%actor% removed the block item %target%'
+        shout.moderated: '%actor% moderated a shout by %target%'
+        shout.deleted: '%actor% deleted a shout by %target%'
+        vocabulary.created: '%actor% created the vocabulary %target%'
+        vocabulary.updated: '%actor% updated the vocabulary %target%'
+        vocabulary.deleted: '%actor% deleted the vocabulary %target%'
+        term.created: '%actor% added the term %target%'
+        term.updated: '%actor% updated the term %target%'
+        term.deleted: '%actor% removed the term %target%'

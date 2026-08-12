@@ -1,0 +1,151 @@
+{#
+  The audit log listing.
+
+  Extends the control panel shell directly (and so overrides `content`, not
+  `admin_content`) to match templates/shoutbox/admin/list.html.twig, which is
+  where the bundle's admin pages are heading.
+
+  The middle column is the vB3 part: a sentence, not a row of columns. See
+  AuditExtensionRuntime for how a phrasing is chosen and how to add one.
+#}
+{% extends '@PixiekatSymfonyHelpers/admin/cp_layout.html.twig' %}
+
+{% block admin_page_title %}{{ 'Audit Log'|trans }}{% endblock %}
+
+{% block content %}
+
+  {#
+    GET, so a filtered view is a bookmarkable URL. Every control has a real
+    <label> tied to it by id — a placeholder is not a label; it disappears the
+    moment you type and screen readers are inconsistent about announcing it.
+  #}
+  <form method="get" action="{{ path('pixiekat_symfony_helpers_audit_list') }}" class="audit-filters">
+    <fieldset>
+      <legend>{{ 'Filter entries'|trans }}</legend>
+
+      <p>
+        <label for="filter-action">{{ 'Action'|trans }}</label>
+        <select id="filter-action" name="action">
+          <option value="">{{ 'Any action'|trans }}</option>
+          {% for action in actions %}
+            <option value="{{ action }}"{{ action == filters.action|default('') ? ' selected' : '' }}>{{ action }}</option>
+          {% endfor %}
+        </select>
+      </p>
+
+      <p>
+        <label for="filter-target-type">{{ 'Target type'|trans }}</label>
+        <select id="filter-target-type" name="target_type">
+          <option value="">{{ 'Any type'|trans }}</option>
+          {% for type in target_types %}
+            <option value="{{ type }}"{{ type == filters.target_type|default('') ? ' selected' : '' }}>{{ type }}</option>
+          {% endfor %}
+        </select>
+      </p>
+
+      <p>
+        <label for="filter-actor">{{ 'Performed by'|trans }}</label>
+        <input type="search" id="filter-actor" name="actor_label" value="{{ filters.actor_label|default('') }}">
+      </p>
+
+      <p>
+        <label for="filter-ip">{{ 'IP address'|trans }}</label>
+        <input type="text" id="filter-ip" name="ip" value="{{ filters.ip|default('') }}" inputmode="numeric">
+      </p>
+
+      <p>
+        <label for="filter-from">{{ 'From'|trans }}</label>
+        <input type="date" id="filter-from" name="from" value="{{ filters.from|default('') }}">
+      </p>
+
+      <p>
+        <label for="filter-to">{{ 'To'|trans }}</label>
+        <input type="date" id="filter-to" name="to" value="{{ filters.to|default('') }}">
+      </p>
+
+      <p>
+        <button type="submit">{{ 'Filter'|trans }}</button>
+        <a href="{{ path('pixiekat_symfony_helpers_audit_list') }}">{{ 'Clear'|trans }}</a>
+      </p>
+    </fieldset>
+  </form>
+
+  {#
+    role="status" so the result count is announced after filtering. Screen
+    reader users otherwise get no feedback that anything changed — the table
+    just silently becomes different.
+  #}
+  <p role="status">
+    {{ 'Showing page %page% of %pages% — %total% entr(y/ies) in total.'|trans({
+      '%page%': page, '%pages%': pages, '%total%': total,
+    }) }}
+  </p>
+
+  <table class="audit-table">
+    <caption class="visually-hidden">{{ 'Audit log entries, newest first'|trans }}</caption>
+    <thead>
+      <tr>
+        <th scope="col">{{ 'When'|trans }}</th>
+        <th scope="col">{{ 'What happened'|trans }}</th>
+        <th scope="col">{{ 'Action'|trans }}</th>
+        <th scope="col">{{ 'IP'|trans }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in entries %}
+        <tr>
+          <td>
+            <time datetime="{{ entry.createdAt|date('c') }}" title="{{ entry.createdAt|date('j F Y, H:i:s') }}">
+              {{ entry.createdAt|date('j M Y H:i') }}
+            </time>
+          </td>
+          <td>
+            {# NOT |raw. Actor and target labels are user-supplied text. #}
+            {{ audit_message(entry) }}
+
+            {% if entry.context is not empty %}
+              {#
+                <details> gives a per-row expander with no JavaScript at all,
+                keyboard operable for free. vB3 needed a script for this.
+              #}
+              <details class="audit-context">
+                <summary>{{ 'Details'|trans }}</summary>
+                <dl>
+                  {% for key, value in entry.context %}
+                    <dt>{{ key }}</dt>
+                    <dd>{{ value is iterable ? value|json_encode : value }}</dd>
+                  {% endfor %}
+                </dl>
+              </details>
+            {% endif %}
+          </td>
+          <td><code>{{ entry.action }}</code></td>
+          <td><code>{{ entry.ipAddress ?? '—' }}</code></td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="4">{{ 'No entries match those filters.'|trans }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if pages > 1 %}
+    {#
+      Plain links, so paging works with JavaScript off and each page is its own
+      URL. `filters|merge` keeps the active filters while paging — losing them
+      on page 2 is a classic and maddening bug.
+    #}
+    <nav class="audit-pager" aria-label="{{ 'Audit log pages'|trans }}">
+      <ul>
+        {% if page > 1 %}
+          <li><a href="{{ path('pixiekat_symfony_helpers_audit_list', filters|merge({page: page - 1})) }}" rel="prev">{{ '← Newer'|trans }}</a></li>
+        {% endif %}
+        {% if page < pages %}
+          <li><a href="{{ path('pixiekat_symfony_helpers_audit_list', filters|merge({page: page + 1})) }}" rel="next">{{ 'Older →'|trans }}</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
+
+{% endblock %}

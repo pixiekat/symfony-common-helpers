@@ -2,73 +2,117 @@
 declare(strict_types=1);
 namespace Pixiekat\SymfonyHelpers\Interfaces\Entity;
 
+use Pixiekat\SymfonyHelpers\Interfaces\Entity\HelpersUserInterface;
+
+/**
+ * Contract for an audit log entry.
+ *
+ * ── WHY THE ACTION CONSTANTS CHANGED VALUE ─────────────────────────────────
+ * They used to be human sentences: 'Added', 'Updated', 'Deleted'. Storing
+ * display text is a trap — it cannot be translated, it cannot be renamed
+ * without rewriting every historical row, and it cannot be matched on reliably
+ * ('Deleted' vs 'deleted' vs 'Removed'). The values are now stable machine keys
+ * and the display text lives in translations/messages.en.yml under
+ * `audit.action.*`, rendered by the audit_message() Twig function.
+ *
+ * Keys are namespaced with a dot — 'user.deleted', 'block.created' — so an
+ * admin filter can match a whole subsystem with a LIKE 'user.%'.
+ */
 interface AuditLogInterface {
 
-  public const AUDIT_LOG_ACTION_ADDED = 'Added';
-
-  public const AUDIT_LOG_ACTION_UPDATED = 'Updated';
-
-  public const AUDIT_LOG_ACTION_DELETED = 'Deleted';
+  /**
+   * Generic CRUD actions, for callers that have nothing more specific to say.
+   */
+  public const ACTION_CREATED = 'created';
+  public const ACTION_UPDATED = 'updated';
+  public const ACTION_DELETED = 'deleted';
 
   /**
-   * Gets the audit log action.
+   * The old AUDIT_LOG_ACTION_* constants deliberately do NOT live here any more.
+   * They are declared in Traits\Deprecated\AuditLogDeprecatedTrait alongside the
+   * old methods, so retiring the whole deprecation surface is one `use` line and
+   * one folder — not an archaeology exercise across three files. An interface
+   * constant cannot be removed by deleting a trait; a trait constant can.
    *
-   * @return string The action of this audit log item.
+   * @see \Pixiekat\SymfonyHelpers\Traits\Deprecated\AuditLogDeprecatedTrait
+   */
+
+  /**
+   * Gets the machine key describing what happened, e.g. 'user.deleted'.
+   *
+   * @return string The action key.
    */
   public function getAction(): string;
 
   /**
-   * Gets the audit log entity type.
+   * Gets the user who performed the action, if they still exist.
    *
-   * @return string The entity type of this audit log item.
+   * May be null for actions taken by the system (console commands, cron) or
+   * where the account has since been deleted. Use getActorLabel() for display —
+   * it survives both cases.
+   *
+   * @return HelpersUserInterface|null The actor.
    */
-  public function getEntityType(): string;
+  public function getActor(): ?HelpersUserInterface;
 
   /**
-   * Gets the audit log owner.
+   * Gets the actor's name as it was AT THE TIME the entry was written.
    *
-   * @return string The owner of this audit log item.
+   * Denormalised on purpose. An audit log whose text changes when someone
+   * renames their account, or goes blank when the account is deleted, is not an
+   * audit log — it is a join that happens to be right today.
+   *
+   * @return string The actor label, e.g. an email address, or 'system'.
    */
-  public function getPerformedBy(): string;
+  public function getActorLabel(): string;
 
   /**
-   * Gets the date the audit log was created.
+   * Gets the short type of the thing acted upon, e.g. 'block'.
    *
-   * @return \DateTimeImmutable The DateTime object.
+   * @return string|null The target type, or null for actions with no subject.
+   */
+  public function getTargetType(): ?string;
+
+  /**
+   * Gets the identifier of the thing acted upon.
+   *
+   * A string rather than an int so it can hold a uuid, a composite key or a
+   * machine name without a second column.
+   *
+   * @return string|null The target id.
+   */
+  public function getTargetId(): ?string;
+
+  /**
+   * Gets the target's name as it was at the time, for the same reason as
+   * getActorLabel(). This is the half that makes "deleted vocabulary #7"
+   * readable a year later.
+   *
+   * @return string|null The target label.
+   */
+  public function getTargetLabel(): ?string;
+
+  /**
+   * Gets the IP address the action came from.
+   *
+   * @return string|null The address, or null for CLI actions.
+   */
+  public function getIpAddress(): ?string;
+
+  /**
+   * Gets arbitrary structured detail about the action.
+   *
+   * Named to match PSR-3: the same array is handed to Monolog as the log
+   * record's context, so one shape serves both sinks.
+   *
+   * @return array The context.
+   */
+  public function getContext(): array;
+
+  /**
+   * Gets the moment the entry was written.
+   *
+   * @return \DateTimeImmutable|null The timestamp.
    */
   public function getCreatedAt(): ?\DateTimeImmutable;
-
-  /**
-   * Sets the audit log action.
-   *
-   * @param string $action The action of this audit log item.
-   *
-   * @return static The current instantiated instance.
-   */
-  public function setAction(string $action): static;
-
-  /**
-   * Sets the audit log entity type.
-   *
-   * @param string $entityType The entity type of this audit log item.
-   *
-   * @return static The current instantiated instance.
-   */
-  public function setEntityType(string $entityType): static;
-
-  /**
-   * Sets the audit log performed by.
-   *
-   * @param string $performedBy The owner of this audit log item.
-   *
-   * @return static The current instantiated instance.
-   */
-  public function setPerformedBy(string $performedBy): static;
-
-  /**
-   * Sets the audit log creation date.
-   *
-   * @param \DateTimeImmutable $createdAt The date of this audit log item.
-   */
-  public function setCreatedAt(\DateTimeImmutable $createdAt): static;
 }
