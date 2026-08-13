@@ -1,8 +1,8 @@
 # Symfony Common Helpers
 
-This is a collection of common traits and files for Symfony applications to be reused across systems. This will probably turn into a bundle.
+This is a collection of common traits and files for Symfony applications to be reused across systems.
 
-# Configuration
+## Configuration
 
 Everything is defaulted, so the bundle works with no configuration at all. The
 one knob that matters:
@@ -46,7 +46,44 @@ doctrine_migrations:
         'Pixiekat\SymfonyHelpers': '%kernel.project_dir%/vendor/pixiekat/symfony-common-helpers/migrations'
 ```
 
-# Blocks
+## Styles
+
+The bundle ships **one** stylesheet: `Resources/public/styles/symfony-common-helpers.css`.
+
+**Control panel pages need nothing.** `admin/cp_layout.html.twig` links it itself,
+so every admin screen is styled with no configuration in the consuming app.
+
+**Public-facing widgets** — `place_block()`, `place_shoutbox()` — are rendered
+inside *your* templates, so your base template links it, once:
+
+```twig
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('bundles/pixiekatsymfonyhelpers/styles/symfony-common-helpers.css') }}">
+{% endblock %}
+```
+
+Symfony has no bundle-level asset attachment — there is no `attach_library()`
+equivalent, because Twig streams output top-to-bottom and `</head>` is already
+written by the time a body partial runs. One explicit line is the mechanism, and
+it is the better outcome anyway: the `<link>` lands in `<head>` so nothing
+flashes unstyled, and there is exactly one place to look when styles go missing.
+
+The stylesheet sets **structure only** — spacing, stacking, wrapping — and leaves
+colour and type to you, so dropping a widget into a site never fights that site's
+design. Everything tunable is a custom property, so override by redeclaring them
+rather than by out-specifying selectors:
+
+```css
+.shoutbox { --shoutbox-gap: 1rem; }
+```
+
+Assets resolve through AssetMapper automatically (the bundle's `Resources/public`
+is mapped to `bundles/pixiekatsymfonyhelpers`), and `assets:install` also copies
+them into `public/bundles/` for apps not using AssetMapper — so `asset()` works
+either way.
+
+## Blocks
 
 A **block** is a named chunk of page content. A **block item** is one entry
 inside it — normally a link. Together they replace the hand-written arrays that
@@ -82,7 +119,7 @@ If you want the data rather than the markup, take the entity and write your own:
 {% endif %}
 ```
 
-## Render options
+### Render options
 
 | Option | Default | What it does |
 | --- | --- | --- |
@@ -96,7 +133,7 @@ A block that does not exist, or is disabled, renders as an empty string and logs
 a warning. A template referencing a not-yet-seeded block should leave a hole in
 the page, not a 500.
 
-## Storing content
+### Storing content
 
 A block holds either a prose `body`, an ordered list of items, or both.
 Presentation quirks that belong to one site rather than to the general idea of
@@ -120,7 +157,7 @@ $entityManager->flush();
 Flags read by the default item template: `wrapper_label` (text shown before the
 item), `new_window` (off by default — see below), `rel` (extra rel tokens).
 
-## Overriding the markup
+### Overriding the markup
 
 Set `template` on a block, or pass it per call. A replacement receives exactly
 the same variables as the default (`block`, `items`, `show_title`,
@@ -129,7 +166,7 @@ the same variables as the default (`block`, `items`, `show_title`,
 The default templates assume one thing from your stylesheet: a
 `.visually-hidden` class using the standard clip-rect pattern.
 
-## Accessibility notes
+### Accessibility notes
 
 * Blocks render as a `<section>` labelled by their own heading via
   `aria-labelledby`. A `<section>` with no accessible name is ignored by screen
@@ -142,7 +179,7 @@ The default templates assume one thing from your stylesheet: a
   visually hidden "(opens in a new window)" and applies
   `rel="noopener noreferrer"`.
 
-# Shoutbox
+## Shoutbox
 
 Drop it anywhere, the same way you place a block:
 
@@ -183,7 +220,7 @@ If you run behind a reverse proxy, configure Symfony's trusted proxies. Otherwis
 every shout records the proxy's address and the flood limit applies to your whole
 site at once.
 
-# Admin
+## Admin
 
 Blocks and the shoutbox both have full CRUD under `/admincp`, built on the same
 pattern as the existing taxonomy screens:
@@ -210,9 +247,10 @@ soft-deleted rows the public view hides. Status changes are POSTs with CSRF
 tokens rather than links — a state-changing GET can be fired by a prefetcher, an
 `<img>` on a hostile page, or a mail client preview.
 
-# Contact
+## Contact
 
 I'm on the following places.
+
 * [Bluesky](https://bsky.app/profile/netkitten.net)
 * [Codeberg](https://codeberg.org/pixiekat)
 * [Mastodon](https://tech.lgbt/@pixiekat)
