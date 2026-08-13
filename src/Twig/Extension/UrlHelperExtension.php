@@ -9,7 +9,9 @@ use Twig\TwigFunction;
 
 class UrlHelperExtension extends AbstractExtension {
   public function getFilters(): array {
-    return [];
+    return [
+        new TwigFilter('get_domain_and_tld_from_url', [UrlHelperExtensionRuntime::class, 'getDomainAndTldFromUrl'])
+    ];
   }
 
   public function getFunctions(): array {
