@@ -59,6 +59,20 @@ class BlockItemType extends AbstractType {
           ),
         ],
       ])
+      ->add('wrapperLabel', FormTypes\TextType::class, [
+        'label' => 'Wrapper label',
+        'required' => false,
+        'help' => 'Optional text to display above the item.',
+        'attr' => [
+          'class' => 'form-control',
+        ],
+        'constraints' => [
+          new Assert\Length(
+            max: 255,
+            maxMessage: 'Wrapper label cannot be longer than {{ limit }} characters.',
+          ),
+        ],
+      ])
       ->add('url', FormTypes\UrlType::class, [
         'label' => 'URL',
         'required' => false,

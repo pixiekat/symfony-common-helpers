@@ -41,6 +41,9 @@
   {% endif %}
 
   {% if item.isLink %}
+    {% if item.wrapperLabel %}
+      <span class="block--item-prefix">{{ item.wrapperLabel }}</span>
+    {% endif %}
     <a class="block--item-link"
        href="{{ item.url }}"
        {%- if new_window %} target="_blank" rel="noopener noreferrer{% if extra_rel %} {{ extra_rel }}{% endif %}"
@@ -49,7 +52,7 @@
         {# aria-hidden: the icon repeats the label, so announcing it twice is noise. #}
         <span class="block--item-icon" aria-hidden="true">{{ item.icon }}</span>
       {% endif %}
-      <span class="block--item-label">{{ item.label ?? item.url }}</span>
+      <span class="block--item-label">{{ item.label ?? item.url|get_domain_and_tld_from_url }}</span>
       {% if new_window %}
         <span class="visually-hidden">(opens in a new window)</span>
       {% endif %}
