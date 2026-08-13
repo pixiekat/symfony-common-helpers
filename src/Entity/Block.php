@@ -53,6 +53,9 @@ use Symfony\Component\Uid\Uuid;
  */
 #[ORM\Table(name: 'blocks')]
 #[ORM\UniqueConstraint(name: 'uniq_block_name', columns: ['name'])]
+// EntityUuidTrait marks the column unique, which makes Doctrine generate a
+// hash-named index. Naming it here matches what the migration created.
+#[ORM\UniqueConstraint(name: 'uniq_block_uuid', columns: ['uuid'])]
 #[ORM\Entity(repositoryClass: Repository\BlockRepository::class)]
 #[ORM\Cache(
   usage: 'NONSTRICT_READ_WRITE',

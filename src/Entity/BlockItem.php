@@ -43,6 +43,10 @@ use Pixiekat\SymfonyHelpers\Traits as PixieTraits;
  */
 #[ORM\Table(name: 'block_items')]
 #[ORM\UniqueConstraint(name: 'uniq_block_item_name', columns: ['block_id', 'name'])]
+// Declared explicitly so it keeps the name the migration gave it. Doctrine
+// creates an index for a join column automatically, but names it with a hash
+// (IDX_260F2FAB…) — and then wants to rename ours to that on every schema diff.
+#[ORM\Index(name: 'idx_block_items_block_id', columns: ['block_id'])]
 #[ORM\Entity(repositoryClass: Repository\BlockItemRepository::class)]
 #[ORM\Cache(
   usage: 'NONSTRICT_READ_WRITE',
@@ -82,6 +86,14 @@ class BlockItem {
   #[ORM\ManyToOne(targetEntity: Entity\Block::class, inversedBy: 'items')]
   #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
   private ?Block $block = null;
+
+  /**
+   * Wrapper label
+   *
+   * Can be used to display a label above the item.
+   */
+  #[ORM\Column(length: 255, nullable: true)]
+  private ?string $wrapperLabel = null;
 
   /**
    * Where the item points.
@@ -138,6 +150,26 @@ class BlockItem {
   public function setBlock(?Block $block): self {
     $this->block = $block;
 
+    return $this;
+  }
+
+  /**
+   * Gets the item's wrapper label.
+   *
+   * @return string|null The wrapper label, or null if none.
+   */
+  public function getWrapperLabel(): ?string {
+    return $this->wrapperLabel;
+  }
+
+  /**
+   * Sets the item's wrapper label.
+   *
+   * @param string|null $wrapperLabel The wrapper label, or null to remove it.
+   * @return self
+   */
+  public function setWrapperLabel(?string $wrapperLabel): self {
+    $this->wrapperLabel = $wrapperLabel;
     return $this;
   }
 

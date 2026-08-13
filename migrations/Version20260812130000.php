@@ -47,7 +47,10 @@ final class Version20260812130000 extends AbstractMigration {
           ip_address VARCHAR(45) DEFAULT NULL,
           status VARCHAR(16) DEFAULT 'published' NOT NULL,
           flags JSON DEFAULT NULL,
-          created_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)',
+          -- No COMMENT '(DC2Type:datetime_immutable)'. DBAL 3 used those to
+          -- recover a column's Doctrine type; DBAL 4 dropped the mechanism, so
+          -- one written now only shows up as permanent schema drift.
+          created_at DATETIME NOT NULL,
           INDEX idx_shouts_channel_created (channel, created_at),
           INDEX idx_shouts_ip_address (ip_address),
           INDEX IDX_shouts_author_id (author_id),

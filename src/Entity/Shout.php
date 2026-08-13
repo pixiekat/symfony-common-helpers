@@ -36,6 +36,10 @@ use Pixiekat\SymfonyHelpers\Traits as PixieTraits;
 #[ORM\Table(name: 'shouts')]
 #[ORM\Index(name: 'idx_shouts_channel_created', columns: ['channel', 'created_at'])]
 #[ORM\Index(name: 'idx_shouts_ip_address', columns: ['ip_address'])]
+// Declared so it keeps the name the migration gave it — Doctrine indexes a join
+// column automatically but names it with a hash, then wants ours renamed to that
+// on every schema diff.
+#[ORM\Index(name: 'idx_shouts_author_id', columns: ['author_id'])]
 #[ORM\Entity(repositoryClass: Repository\ShoutRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 class Shout {

@@ -44,7 +44,12 @@ final class Version20260812120000 extends AbstractMigration {
           is_enabled TINYINT(1) DEFAULT 1 NOT NULL,
           locked TINYINT(1) DEFAULT 1 NOT NULL,
           flags JSON DEFAULT NULL,
-          uuid BINARY(16) NOT NULL COMMENT '(DC2Type:uuid)',
+          -- No COMMENT '(DC2Type:uuid)' here. DBAL 3 used those comments to
+          -- recover a column's Doctrine type; DBAL 4 dropped the mechanism, so
+          -- writing one now just leaves a comment the entity does not declare
+          -- and a permanent "CHANGE uuid uuid BINARY(16) NOT NULL" in every
+          -- schema diff.
+          uuid BINARY(16) NOT NULL,
           UNIQUE INDEX uniq_block_name (name),
           UNIQUE INDEX uniq_block_uuid (uuid),
           PRIMARY KEY(id)
@@ -64,6 +69,7 @@ final class Version20260812120000 extends AbstractMigration {
           block_id INT NOT NULL,
           name VARCHAR(255) NOT NULL,
           label VARCHAR(255) DEFAULT NULL,
+          wrapper_label VARCHAR(255) DEFAULT NULL,
           url VARCHAR(512) DEFAULT NULL,
           icon VARCHAR(255) DEFAULT NULL,
           weight INT DEFAULT 0 NOT NULL,
