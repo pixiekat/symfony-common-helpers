@@ -1,0 +1,95 @@
+.shoutbox {
+  --shoutbox-gap: 0.75rem;
+  --shoutbox-radius: 0.25rem;
+  --shoutbox-rule: currentColor;
+  --shoutbox-meta-size: 0.8125em;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--shoutbox-gap);
+}
+
+.shoutbox--list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--shoutbox-gap);
+}
+
+.shout {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--shoutbox-gap) / 3);
+}
+
+.shout--meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.5em;
+  align-items: baseline;
+  font-size: var(--shoutbox-meta-size);
+  /* Slightly recessive, but via opacity rather than a hardcoded grey, so it
+     stays legible on a dark background as well as a light one. */
+  opacity: 0.75;
+}
+
+.shout--author {
+  font-weight: 700;
+}
+
+.shout--body {
+  margin: 0;
+  /* Nobody types newlines into a shoutbox expecting them to vanish, and a long
+     unbroken URL should not force the whole sidebar to scroll sideways. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.shoutbox--notice {
+  margin: 0;
+  padding: 0.5em 0.75em;
+  border-radius: var(--shoutbox-radius);
+  border: 1px solid var(--shoutbox-rule);
+}
+
+.shoutbox--empty {
+  margin: 0;
+  opacity: 0.75;
+  font-style: italic;
+}
+
+/*
+ * Honour a reduced-motion preference for anything the host adds on top — the
+ * widget itself does not animate, but this keeps a transition added downstream
+ * from ignoring the setting.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .shoutbox *,
+  .shoutbox *::before,
+  .shoutbox *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.block--items {
+    list-style-type: none;
+    margin: 0 auto;
+    padding-left: 0;
+}
+
+section.block:not(:last-child) {
+    margin-bottom: 30px;
+}
+
+.block--items .block--item:not(:last-child) {
+    margin-bottom: 10px;
+}
+
+.block--item-prefix {
+  display: block;
+  margin-bottom: 0.2rem;
+}
