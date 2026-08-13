@@ -53,6 +53,7 @@ class ShoutboxManager {
    * @param ShoutRepository $shouts Read side.
    * @param EntityManagerInterface $entityManager Write side.
    * @param BanManager $banManager Existing ban checks, reused wholesale.
+   * @param ShoutModerator $moderator Decides publish / flag / hold / refuse.
    * @param Security $security Used to attribute a shout to the logged-in user.
    * @param RequestStack $requestStack Used to discover the client IP.
    * @param LoggerInterface $logger Moderation trail.
@@ -61,6 +62,7 @@ class ShoutboxManager {
     private readonly ShoutRepository $shouts,
     private readonly EntityManagerInterface $entityManager,
     private readonly BanManager $banManager,
+    private readonly ShoutModerator $moderator,
     private readonly Security $security,
     private readonly RequestStack $requestStack,
     private readonly LoggerInterface $logger,
@@ -122,12 +124,39 @@ class ShoutboxManager {
 
     $user = $this->security->getUser();
 
+    // Moderation runs after the ban and flood checks — those are cheaper and
+    // more decisive — and before anything is persisted, so a refused shout
+    // leaves no row behind at all.
+    $verdict = $this->moderator->assess($body, $user instanceof HelpersUserInterface ? $user : null, $ipAddress);
+
+    if (!$verdict->shouldStore()) {
+      $this->logger->info('Refused shout from {ip}: {reasons}', [
+        'ip' => $ipAddress,
+        'reasons' => $verdict->reasonSummary(),
+      ]);
+
+      throw ShoutRejectedException::moderated();
+    }
+
     $shout = new Shout($channel);
     $shout
       ->setBody($body)
       ->setIpAddress($ipAddress)
-      ->setStatus(ShoutStatus::Published)
+      // Published for a clean verdict, Pending when held. toStatus() cannot
+      // return null here — shouldStore() above already excluded the only case
+      // that does — but the coalesce keeps the fallback on the safe side.
+      ->setStatus($verdict->decision->toStatus() ?? ShoutStatus::Pending)
     ;
+
+    // Keep WHY alongside the shout, so the moderation queue can say
+    // "links:3, word:foo(20)" rather than leaving you to re-read every entry.
+    if ($verdict->reasons !== []) {
+      $shout->setFlag('moderation', [
+        'decision' => $verdict->decision->value,
+        'score' => $verdict->score,
+        'reasons' => $verdict->reasons,
+      ]);
+    }
 
     // A real account beats a typed-in name: anyone can type "katy" into a form,
     // so when we know who this is, we say so and ignore the free-text field.

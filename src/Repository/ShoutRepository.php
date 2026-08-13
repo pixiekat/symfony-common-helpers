@@ -95,6 +95,29 @@ class ShoutRepository extends ServiceEntityRepository {
   }
 
   /**
+   * Counts an address's shouts that are still published.
+   *
+   * The trust signal behind "first post moderated": an address whose earlier
+   * shouts are all still up has, by definition, never been moderated. Counting
+   * only Published rows is what makes that true — the moment a moderator marks
+   * one Spam or Deleted, the count drops and the address loses its trust
+   * automatically, with no separate reputation table to keep in step.
+   *
+   * @param string $ipAddress The address to check.
+   *
+   * @return int How many of its shouts are currently published.
+   */
+  public function countPublishedFromIp(string $ipAddress): int {
+    return (int) $this->createQueryBuilder('s')
+      ->select('COUNT(s.id)')
+      ->andWhere('s.ipAddress = :ip')->setParameter('ip', $ipAddress)
+      ->andWhere('s.status = :status')->setParameter('status', ShoutStatus::Published)
+      ->getQuery()
+      ->getSingleScalarResult()
+    ;
+  }
+
+  /**
    * Counts recent shouts from one IP address, for flood control.
    *
    * Counts EVERY status, not just published ones — otherwise moderating a

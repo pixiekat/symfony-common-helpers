@@ -21,6 +21,9 @@ class ShoutRejectedException extends \RuntimeException {
   /** The message was empty once trimmed. */
   public const REASON_EMPTY = 'empty';
 
+  /** The message was refused by the moderator. */
+  public const REASON_MODERATED = 'moderated';
+
   /**
    * Constructor.
    *
@@ -57,6 +60,19 @@ class ShoutRejectedException extends \RuntimeException {
       self::REASON_FLOOD,
       sprintf('You are posting too quickly. Please wait about %d seconds and try again.', $seconds),
     );
+  }
+
+  /**
+   * The moderator refused the message.
+   *
+   * Says nothing about WHY, on purpose. Telling somebody which word
+   * tripped the filter is telling them precisely what to change, and the
+   * reasons are already recorded in the log for you.
+   *
+   * @return self
+   */
+  public static function moderated(): self {
+    return new self(self::REASON_MODERATED, 'Your message could not be posted.');
   }
 
   /**
