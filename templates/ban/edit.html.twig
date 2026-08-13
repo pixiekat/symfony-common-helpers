@@ -1,8 +1,8 @@
-{% extends '@PixiekatSymfonyHelpers/admin_layout.html.twig' %}
+{% extends admin_layout %}
 
-{% block title %}{{ parent() }} - {{ 'bans.edit.title'|trans({'%ip_address%': ban.getIpAddress }) }}{% endblock %}
+{% block admin_page_title %}{{ 'bans.edit.title'|trans({'%ip_address%': ban.getIpAddress }) }}{% endblock %}
 
-{% block admin_content %}
+{% block content %}
   <div class="container">
     <div class="row">
       <div class="col">

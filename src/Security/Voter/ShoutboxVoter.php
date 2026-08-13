@@ -23,6 +23,15 @@ use Symfony\Component\Security\Core\User\UserInterface;
 final class ShoutboxVoter extends BaseVoter implements Interfaces\Security\Voter\ShoutboxVoterInterface {
 
   /**
+   * Governed by symfony_helpers.features.shoutbox.
+   *
+   * With that switch off, BaseVoter::vote() abstains before any check below
+   * runs, so this feature vanishes from the control panel menu and its routes
+   * answer 403.
+   */
+  protected const FEATURE = 'shoutbox';
+
+  /**
    * {@inheritdoc}
    */
   protected function supports(string $attribute, mixed $subject): bool {

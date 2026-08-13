@@ -1,10 +1,10 @@
-{% extends '@PixiekatSymfonyHelpers/admin_layout.html.twig' %}
+{% extends admin_layout %}
 
 {% set V = 'Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\BlockVoterInterface' %}
 
-{% block title %}{{ 'Items in %block%'|trans({'%block%': block.name}) }}{% endblock %}
+{% block admin_page_title %}{{ 'Items in %block%'|trans({'%block%': block.name}) }}{% endblock %}
 
-{% block admin_content %}
+{% block content %}
   <div class="container">
     <div class="row">
       <div class="col">

@@ -1,8 +1,8 @@
-{% extends '@PixiekatSymfonyHelpers/admin_layout.html.twig' %}
+{% extends admin_layout %}
 
-{% block title %}{{ 'Delete Item: %item%'|trans({'%item%': item.name}) }}{% endblock %}
+{% block admin_page_title %}{{ 'Delete Item: %item%'|trans({'%item%': item.name}) }}{% endblock %}
 
-{% block admin_content %}
+{% block content %}
   <div class="container" data-turbo="false">
     <div class="row">
       <div class="col">

@@ -46,7 +46,22 @@ class SymfonyHelpersExtension extends Extension implements PrependExtensionInter
    *   opaque Doctrine mapping error a long way from the actual cause.
    */
   public function prepend(ContainerBuilder $container): void {
+    $config = $this->processConfiguration(
+      new Configuration(),
+      $container->getExtensionConfig($this->getAlias()),
+    );
+
+    // Parameters are set HERE and not in load(), because another bundle's
+    // load() may need them and load order is not ours to control. TwigBundle is
+    // registered before this one in bundles.php, so twig's load() resolves
+    // %symfony_helpers.admin_layout% in the globals we prepend below — and it
+    // does that before this extension's load() ever runs. Setting them during
+    // prepend(), which the kernel calls for every bundle before ANY load(),
+    // removes the ordering question entirely.
+    $this->setParameters($container, $config);
+
     $this->prependMonologChannels($container);
+    $this->prependTwigGlobals($container);
 
     // Nothing to do if Doctrine is not installed. The taxonomy, logging and
     // utility helpers work fine without it, so this must not become a hard
@@ -54,11 +69,6 @@ class SymfonyHelpersExtension extends Extension implements PrependExtensionInter
     if (!$container->hasExtension('doctrine')) {
       return;
     }
-
-    $config = $this->processConfiguration(
-      new Configuration(),
-      $container->getExtensionConfig($this->getAlias()),
-    );
 
     if (!$config['resolve_target_entities']) {
       return;
@@ -138,15 +148,83 @@ class SymfonyHelpersExtension extends Extension implements PrependExtensionInter
   }
 
   /**
+   * Publishes the admin layout name as a Twig global.
+   *
+   * Every admin template in this bundle does `{% extends admin_layout %}`, so
+   * the value has to be available before anything else in the template runs —
+   * which rules out setting it per-controller and makes a global the right
+   * shape. It is a plain string from a container parameter, so unlike the menu
+   * there is no work being done eagerly.
+   *
+   * Why a variable extends instead of a template override: overriding a bundle
+   * template requires templates/bundles/<Bundle>/…, which resolves against the
+   * PROJECT directory and is therefore available to applications only. A bundle
+   * (Lumina) cannot use it, and would otherwise have to fight for the
+   * @PixiekatSymfonyHelpers namespace via twig.paths, where the winner depends
+   * on bundle registration order. Configuration works identically for both:
+   *
+   *   # an application, in config/packages/symfony_helpers.yaml
+   *   symfony_helpers:
+   *     admin_layout: 'admin/layout.html.twig'
+   *
+   *   # a bundle, from its own extension's prepend()
+   *   $container->prependExtensionConfig('symfony_helpers', [
+   *     'admin_layout' => '@Lumina/admin/layout.html.twig',
+   *   ]);
+   *
+   * The cost is that lint:twig cannot follow a variable extends, so a typo in
+   * the layout name surfaces at render time rather than at lint time.
+   *
+   * The parameter is set in load(); prepended config is resolved at compile
+   * time, so referencing it here before it exists is fine.
+   *
+   * @param ContainerBuilder $container The container being built.
+   *
+   * @return void
+   */
+  private function prependTwigGlobals(ContainerBuilder $container): void {
+    if (!$container->hasExtension('twig')) {
+      return;
+    }
+
+    $container->prependExtensionConfig('twig', [
+      'globals' => [
+        'admin_layout' => '%symfony_helpers.admin_layout%',
+      ],
+    ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  /**
+   * Publishes the resolved configuration as container parameters.
+   *
+   * Called from prepend() rather than load() — see the note there about bundle
+   * load order. Kept as its own method so the reason lives in one place instead
+   * of being implied by where the calls happen to sit.
+   *
+   * @param ContainerBuilder $container The container being built.
+   * @param array $config The processed configuration.
+   *
+   * @return void
+   */
+  private function setParameters(ContainerBuilder $container, array $config): void {
+    // Lets bundle services that need the concrete user class (registration
+    // forms, user CRUD) be handed it rather than importing App\Entity\User.
+    $container->setParameter('symfony_helpers.user_class', $config['user_class']);
+
+    // Consumed by FeatureChecker, which gates both the voters and the admin menu.
+    $container->setParameter('symfony_helpers.features', $config['features']);
+
+    // Referenced by the admin_layout Twig global.
+    $container->setParameter('symfony_helpers.admin_layout', $config['admin_layout']);
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function load(array $configs, ContainerBuilder $container): void {
-    $config = $this->processConfiguration(new Configuration(), $configs);
-
-    // Exposed as a parameter so bundle services needing the concrete class
-    // (registration forms, user CRUD) can be handed it rather than importing
-    // App\Entity\User the way they currently do.
-    $container->setParameter('symfony_helpers.user_class', $config['user_class']);
 
     $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
     $loader->load('services.yml');

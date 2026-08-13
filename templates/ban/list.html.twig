@@ -1,4 +1,4 @@
-{% extends '@PixiekatSymfonyHelpers/admin_layout.html.twig' %}
+{% extends admin_layout %}
 
 {% block title %}Banned IP Addresses{% endblock %}
 
@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="{{ asset('bundles/pixiekatsymfonyhelpers/styles/ban.css') }}">
 {% endblock %}
 
-{% block admin_content %}
+{% block content %}
   <div class="container">
     <div class="row">
       <div class="col">

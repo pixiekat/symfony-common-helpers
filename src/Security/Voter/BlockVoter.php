@@ -19,6 +19,15 @@ use Symfony\Component\Security\Core\User\UserInterface;
 final class BlockVoter extends BaseVoter implements Interfaces\Security\Voter\BlockVoterInterface {
 
   /**
+   * Governed by symfony_helpers.features.blocks.
+   *
+   * With that switch off, BaseVoter::vote() abstains before any check below
+   * runs, so this feature vanishes from the control panel menu and its routes
+   * answer 403.
+   */
+  protected const FEATURE = 'blocks';
+
+  /**
    * {@inheritdoc}
    */
   protected function supports(string $attribute, mixed $subject): bool {

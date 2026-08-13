@@ -15,6 +15,15 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 final class TaxonomyVoter extends BaseVoter implements Interfaces\Security\Voter\TaxonomyVoterInterface {
 
+  /**
+   * Governed by symfony_helpers.features.taxonomy.
+   *
+   * With that switch off, BaseVoter::vote() abstains before any check below
+   * runs, so this feature vanishes from the control panel menu and its routes
+   * answer 403.
+   */
+  protected const FEATURE = 'taxonomy';
+
   protected function supports(string $attribute, mixed $subject): bool {
     return in_array($attribute, $this->getAttributes()) && ($subject instanceof Entity\Term || $subject instanceof Entity\Vocabulary || $subject === null);
   }

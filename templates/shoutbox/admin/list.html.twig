@@ -1,10 +1,10 @@
-{% extends '@PixiekatSymfonyHelpers/admin_layout.html.twig' %}
+{% extends admin_layout %}
 
 {% set V = 'Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\ShoutboxVoterInterface' %}
 
 {% block title %}{{ 'Shoutbox'|trans }}{% endblock %}
 
-{% block admin_content %}
+{% block content %}
   <div class="container">
     <div class="row">
       <div class="col">

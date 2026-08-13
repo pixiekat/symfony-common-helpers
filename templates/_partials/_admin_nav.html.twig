@@ -33,12 +33,6 @@
     prefix: 'pixiekat_symfony_helpers_shout',
   },
   {
-    label: 'Taxonomy',
-    route: 'pixiekat_symfony_helpers_taxonomy_vocabulary_list',
-    granted: is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_ADMINISTER')),
-    prefix: 'pixiekat_symfony_helpers_taxonomy',
-  },
-  {
     label: 'Bans',
     route: 'pixiekat_symfony_helpers_ban_list',
     granted: is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\BanVoterInterface::BAN_LIST_BANS')),

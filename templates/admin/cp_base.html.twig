@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{% block title %}Control Panel{% endblock %}</title>
+
+    {# REQUIRED — cp_layout calls parent() into this #}
+    {% block stylesheets %}{% endblock %}
+
+    {% block javascripts %}
+      {# block importmap %}{{ importmap('admin') }}{% endblock #}
+    {% endblock %}
+  </head>
+  <body class="admin-cp">
+    {# First focusable thing on the page. With the menu ahead of the content in the
+        DOM — and on a narrow screen that means literally above it — a keyboard or
+        screen reader user needs one keystroke past it. #}
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="vb-page">
+        <div class="vb-header">
+        {# <h1> here rather than on the content panel: the control panel is the
+            page, and the panel title below is a section within it. That keeps the
+            document outline h1 → h2 instead of starting at h2 or repeating h1. #}
+        <h1>{% block admin_brand %}Control Panel{% endblock %}</h1>
+        <div class="vb-header__meta">
+            {% block admin_header_links %}{% endblock %}
+        </div>
+        </div>
+
+        <div class="vb-body">
+        {% block admin_nav %}
+            {#
+            `only` keeps the partial's contract explicit: it receives these two
+            variables and nothing else, so it cannot quietly start depending on
+            something that happens to be in scope in one app and not another.
+            #}
+            {% include '@PixiekatSymfonyHelpers/admin/_cp_nav.html.twig' with {
+            sections: admin_nav_sections|default([]),
+            current_route: app.request.attributes.get('_route'),
+            } only %}
+        {% endblock %}
+
+        <main id="main" class="vb-content">
+            <h2 class="vb-content__title">{{ block('admin_page_title') }}</h2>
+
+            <div class="vb-content__inner">
+            {#
+                Flash messages, at the top of the content panel where the eye lands
+                after a redirect. role=alert for errors so they interrupt; role=status
+                for the rest so they are announced politely, after the current phrase.
+            #}
+            {% for label, messages in app.flashes(['success', 'error', 'info', 'danger', 'warning']) %}
+                {% for message in messages %}
+                <p class="flash flash--{{ label }}" role="{{ label in ['error', 'danger'] ? 'alert' : 'status' }}">{{ message }}</p>
+                {% endfor %}
+            {% endfor %}
+
+            {% block content %}{% endblock %}
+            </div>
+        </main>
+        </div>
+
+        <p class="vb-footer">{% block admin_footer %}{{ block('admin_brand') }}{% endblock %}</p>
+    </div>
+  </body>
+</html>

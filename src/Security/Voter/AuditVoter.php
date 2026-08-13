@@ -23,6 +23,15 @@ use Symfony\Component\Security\Core\User\UserInterface;
 final class AuditVoter extends BaseVoter implements Interfaces\Security\Voter\AuditVoterInterface {
 
   /**
+   * Governed by symfony_helpers.features.audit.
+   *
+   * With that switch off, BaseVoter::vote() abstains before any check below
+   * runs, so this feature vanishes from the control panel menu and its routes
+   * answer 403.
+   */
+  protected const FEATURE = 'audit';
+
+  /**
    * {@inheritdoc}
    */
   protected function supports(string $attribute, mixed $subject): bool {

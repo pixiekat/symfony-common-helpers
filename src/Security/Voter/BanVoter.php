@@ -15,6 +15,15 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 final class BanVoter extends BaseVoter implements Interfaces\Security\Voter\BanVoterInterface {
 
+  /**
+   * Governed by symfony_helpers.features.bans.
+   *
+   * With that switch off, BaseVoter::vote() abstains before any check below
+   * runs, so this feature vanishes from the control panel menu and its routes
+   * answer 403.
+   */
+  protected const FEATURE = 'bans';
+
   use Traits\Voter\VoterCRUDTrait;
 
   protected function supports(string $attribute, mixed $subject): bool {

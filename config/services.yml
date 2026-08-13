@@ -35,6 +35,15 @@ services:
       # whatever now happens to sit at index 0. Everything else autowires.
       $entityManager: '@doctrine.orm.default_entity_manager'
 
+  # The features map is a parameter, not an autowirable type, so it has to be
+  # named. Everything that gates on a feature — the voters via BaseVoter, and
+  # AdminNavProvider — goes through this one service.
+  Pixiekat\SymfonyHelpers\Services\FeatureChecker:
+    public: true
+    tags: ['controller.service_arguments']
+    arguments:
+      $features: '%symfony_helpers.features%'
+
   Pixiekat\SymfonyHelpers\Services\LoggingManager:
     public: true
     tags: ['controller.service_arguments']
