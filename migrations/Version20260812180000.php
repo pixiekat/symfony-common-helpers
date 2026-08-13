@@ -4,6 +4,7 @@ namespace Pixiekat\SymfonyHelpers\DoctrineMigrations;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
+use Pixiekat\SymfonyHelpers\Traits\Migration\ResolvesUserTableTrait;
 
 /**
  * Reworks audit_logs: real actor and target, IP address, machine-key actions.
@@ -25,6 +26,8 @@ use Doctrine\Migrations\AbstractMigration;
  * from the earlier migration.
  */
 final class Version20260812180000 extends AbstractMigration {
+
+  use ResolvesUserTableTrait;
 
   /**
    * {@inheritdoc}
@@ -61,8 +64,13 @@ final class Version20260812180000 extends AbstractMigration {
     }
 
     // ── New columns ─────────────────────────────────────────────────────────
+    // Resolved before the column is added: actor_id has to match the
+    // referenced primary key's width and signedness, or MySQL rejects the
+    // constraint with the same errno 150 it uses for a missing table.
+    $users = $this->resolveUserTable($schema);
+
     if (!$table->hasColumn('actor_id')) {
-      $this->addSql('ALTER TABLE audit_logs ADD actor_id INT DEFAULT NULL;');
+      $this->addSql(sprintf('ALTER TABLE audit_logs ADD actor_id %s DEFAULT NULL;', $this->userIdColumnType($users)));
     }
 
     if (!$table->hasColumn('target_id')) {
@@ -106,21 +114,19 @@ final class Version20260812180000 extends AbstractMigration {
       $this->addSql(sprintf('CREATE INDEX %s ON audit_logs (%s);', $name, $columns));
     }
 
-    // The referenced table is the application's own user table, whose name this
-    // bundle cannot know — it comes from resolve_target_entities at runtime.
-    // Guarded so the migration still succeeds where it is not called `users`;
-    // everything else above will have applied and the constraint can be added
-    // by hand.
-    try {
-      $this->addSql(<<<'SQL'
-        ALTER TABLE audit_logs
-          ADD CONSTRAINT FK_audit_logs_actor_id
-          FOREIGN KEY (actor_id) REFERENCES `users` (id) ON DELETE SET NULL;
-        SQL);
+    // The referenced table belongs to the application, so its name is resolved
+    // from the schema rather than hardcoded — see ResolvesUserTableTrait, which
+    // also explains why the try/catch this replaced could never have worked.
+    if ($users === null) {
+      $this->write($this->manualForeignKeyNotice('audit_logs', 'actor_id', 'FK_audit_logs_actor_id'));
+
+      return;
     }
-    catch (\Doctrine\DBAL\Exception $e) {
-      $this->write('Could not add the audit_logs.actor_id foreign key (the users table may be named differently) — skipping.');
-    }
+
+    $this->addSql(sprintf(
+      'ALTER TABLE audit_logs ADD CONSTRAINT FK_audit_logs_actor_id FOREIGN KEY (actor_id) REFERENCES `%s` (id) ON DELETE SET NULL;',
+      $users->getName(),
+    ));
   }
 
   /**
@@ -138,11 +144,10 @@ final class Version20260812180000 extends AbstractMigration {
 
     $table = $schema->getTable('audit_logs');
 
-    try {
+    // Asked of the schema, not wrapped in a try/catch — addSql() only queues
+    // the statement, so a catch here would never see the failure.
+    if ($table->hasForeignKey('FK_audit_logs_actor_id')) {
       $this->addSql('ALTER TABLE audit_logs DROP FOREIGN KEY FK_audit_logs_actor_id;');
-    }
-    catch (\Doctrine\DBAL\Exception $e) {
-      $this->write('Foreign key FK_audit_logs_actor_id not present — skipping.');
     }
 
     foreach (['idx_audit_created_at', 'idx_audit_action', 'idx_audit_target', 'IDX_audit_actor_id'] as $index) {
