@@ -16,6 +16,7 @@ use Symfony\Component\Form as SymfonyForm;
 use Symfony\Component\Form\Extension\Core\Type as FormTypes;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -41,6 +42,7 @@ class UserController extends AbstractController {
     private readonly Security $security,
     private readonly TranslatorInterface $translator,
     private readonly UserPasswordHasherInterface $passwordHasher,
+    private readonly RequestStack $requestStack,
   ) {}
 
   #[Route('/login', name: 'pixiekat_symfony_helpers_login')]
@@ -49,15 +51,51 @@ class UserController extends AbstractController {
     if ($this->security->isGranted('IS_AUTHENTICATED')) {
       return $this->redirect('/');
     }
-    // get the login error if there is one
-    $error = $authenticationUtils->getLastAuthenticationError();
 
-    // last username entered by the user
-    $lastUsername = $authenticationUtils->getLastUsername();
+    $error = $authenticationUtils->getLastAuthenticationError() ?? null;
+    $lastUsername = $authenticationUtils->getLastUsername() ?? null;
+    if ($error) {
+      $message = $error->getMessage();
+      if (stristr($message, 'The presented password cannot be empty')) {
+        $this->addFlash('error', 'You must log in with a password.');
+      }
+      elseif (stristr($message, 'presented password is invalid')) {
+        $this->addFlash('error', 'The entered password was incorrect. Please try again.');
+      }
+      elseif (stristr($message, 'Invalid credentials')) {
+        $this->addFlash('error', 'Invalid username or password.');
+      }
+      else {
+        $this->addFlash('error', 'An error occurred while logging in. Please try again later.');
+      }
+    }
+
+    $form = $this->createForm(PixieForms\UserLoginType::class, [], [
+      'attr' => [
+        'class' => 'w-100',
+      ],
+    ]);
+    $form->handleRequest($this->requestStack->getCurrentRequest());
+
+    /*try {
+      if ($this->security->isGranted('IS_AUTHENTICATED') && $authenticationUtils->getLastAuthenticationSuccessful()) {
+        $user = $authenticationUtils->getLastAuthenticatedUser();
+        if ($user instanceof UserInterface) {
+            $this->addFlash('success', 'Welcome back, ' . $user->getDisplayName() . '!');
+            //$user->setLastLogin(new \DateTimeImmutable());
+            $entityManager->persist($user);
+            $entityManager->flush();
+        }
+      }
+    }
+    catch (\Exception $e) {
+      $this->addFlash('error', 'An error occurred while logging in. Please try again later.');
+    }*/
 
     return $this->render('@PixiekatSymfonyHelpers/user/login.html.twig', [
-      'last_username' => $lastUsername,
       'error' => $error,
+      'last_username' => $lastUsername,
+      'form' => $form->createView(),
     ]);
   }
 
@@ -198,9 +236,7 @@ class UserController extends AbstractController {
       ->add('emailAddress', FormTypes\EmailType::class, [
         'attr' => ['autocomplete' => 'email'],
         'constraints' => [
-          new Assert\NotBlank([
-            'message' => 'Please enter your email',
-          ]),
+          new Assert\NotBlank(message: 'Please enter your email'),
         ],
       ])
       ->add('submit', FormTypes\SubmitType::class, [
@@ -263,15 +299,13 @@ class UserController extends AbstractController {
         ],
         'first_options' => [
           'constraints' => [
-            new Assert\NotBlank([
-              'message' => 'Please enter a password',
-            ]),
-            new Assert\Length([
-              'min' => 4,
-              'minMessage' => 'Your password should be at least {{ limit }} characters',
+            new Assert\NotBlank(message: 'Please enter a password'),
+            new Assert\Length(
+              min: 4,
               // max length allowed by Symfony for security reasons
-              'max' => 4096,
-            ]),
+              max: 4096,
+              minMessage: 'Your password should be at least {{ limit }} characters',
+            ),
           ],
           'label' => 'New password',
         ],
