@@ -61,7 +61,7 @@ class SymfonyHelpersExtension extends Extension implements PrependExtensionInter
     $this->setParameters($container, $config);
 
     $this->prependMonologChannels($container);
-    $this->prependTwigGlobals($container);
+    $this->prependTwigGlobals($container, $config);
 
     // Nothing to do if Doctrine is not installed. The taxonomy, logging and
     // utility helpers work fine without it, so this must not become a hard
@@ -175,23 +175,63 @@ class SymfonyHelpersExtension extends Extension implements PrependExtensionInter
    * The cost is that lint:twig cannot follow a variable extends, so a typo in
    * the layout name surfaces at render time rather than at lint time.
    *
-   * The parameter is set in load(); prepended config is resolved at compile
-   * time, so referencing it here before it exists is fine.
+   * The value is passed in from the processed config and inlined rather than
+   * referenced as %symfony_helpers.admin_layout% — see escapeTwigGlobal() for
+   * why that distinction matters.
    *
    * @param ContainerBuilder $container The container being built.
+   * @param array $config The processed configuration.
    *
    * @return void
    */
-  private function prependTwigGlobals(ContainerBuilder $container): void {
+  private function prependTwigGlobals(ContainerBuilder $container, array $config): void {
     if (!$container->hasExtension('twig')) {
       return;
     }
 
     $container->prependExtensionConfig('twig', [
       'globals' => [
-        'admin_layout' => '%symfony_helpers.admin_layout%',
+        'admin_layout' => $this->escapeTwigGlobal((string) $config['admin_layout']),
       ],
     ]);
+  }
+
+  /**
+   * Escapes a value so twig.globals treats it as text, not a service.
+   *
+   * ── THE COLLISION ──────────────────────────────────────────────────────────
+   * TwigBundle normalises any global whose value starts with '@' into a SERVICE
+   * REFERENCE — that is how `globals: { mailer: '@app.mailer' }` works. Twig's
+   * own namespaced template names also start with '@'. So the perfectly
+   * reasonable:
+   *
+   *     symfony_helpers:
+   *       admin_layout: '@LuminaUi/admin/layout.html.twig'
+   *
+   * is read as "the service LuminaUi/admin/layout.html.twig", and the container
+   * fails with:
+   *
+   *     The service "twig" has a dependency on a non-existent service
+   *     "LuminaUi/admin/layout.html.twig".
+   *
+   * TwigBundle's documented escape for a literal leading '@' is to double it,
+   * so '@@Lumina/...' arrives in the template as '@Lumina/...'. Doing that here
+   * rather than asking every consumer to write '@@' means a bundle template
+   * name can be configured exactly as it is written everywhere else — which is
+   * the only spelling anyone would think to try.
+   *
+   * Note this is also why the value is inlined rather than passed as
+   * '%symfony_helpers.admin_layout%': parameter placeholders in extension
+   * config are resolved BEFORE the extension's Configuration normalises it, so
+   * the placeholder would expand to a leading '@' and hit the same trap with
+   * nowhere left to intervene.
+   *
+   * @param string $value The configured template name.
+   *
+   * @return string The value, safe to hand to twig.globals.
+   */
+  private function escapeTwigGlobal(string $value): string {
+    return str_starts_with($value, '@') ? '@' . $value : $value;
   }
 
   /**
