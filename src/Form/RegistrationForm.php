@@ -33,7 +33,7 @@ final class RegistrationForm extends AbstractType {
         ],
         'constraints' => [
           new Assert\NotBlank(),
-          new Assert\Length(['min' => 6]),
+          new Assert\Length(min: 6),
         ],
         'label' => 'Password',
       ])
@@ -44,7 +44,7 @@ final class RegistrationForm extends AbstractType {
         ],
         'constraints' => [
           new Assert\NotBlank(),
-          new Assert\Length(['max' => 255]),
+          new Assert\Length(max: 255),
         ],
         'label' => 'First Name',
       ])
@@ -55,7 +55,7 @@ final class RegistrationForm extends AbstractType {
         ],
         'constraints' => [
           new Assert\NotBlank(),
-          new Assert\Length(['max' => 255]),
+          new Assert\Length(max: 255),
         ],
         'label' => 'Last Name',
       ])
