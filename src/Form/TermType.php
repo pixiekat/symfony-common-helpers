@@ -22,13 +22,13 @@ class TermType extends AbstractType {
           'placeholder' => 'Enter vocabulary name',
         ],
         'constraints' => [
-          new Assert\NotBlank([
-            'message' => 'Name should not be blank.',
-          ]),
-          new Assert\Length([
-            'max' => 255,
-            'maxMessage' => 'Name cannot be longer than {{ limit }} characters.',
-          ]),
+          new Assert\NotBlank(
+            message: 'Name should not be blank.',
+          ),
+          new Assert\Length(
+            max: 255,
+            maxMessage: 'Name cannot be longer than {{ limit }} characters.',
+          ),
         ],
       ])
       ->add('weight', FormTypes\IntegerType::class, [
@@ -38,18 +38,18 @@ class TermType extends AbstractType {
           'placeholder' => 'Enter weight (lower numbers appear first)',
         ],
         'constraints' => [
-          new Assert\NotBlank([
-            'message' => 'Weight should not be blank.',
-          ]),
-          new Assert\Type([
-            'type' => 'integer',
-            'message' => 'Weight must be an integer.',
-          ]),
-          new Assert\Range([
-            'min' => -50,
-            'max' => 50,
-            'notInRangeMessage' => 'Weight must be between {{ min }} and {{ max }}.',
-          ]),
+          new Assert\NotBlank(
+            message: 'Weight should not be blank.',
+          ),
+          new Assert\Type(
+            type: 'integer',
+            message: 'Weight must be an integer.',
+          ),
+          new Assert\Range(
+            min: -50,
+            max: 50,
+            notInRangeMessage: 'Weight must be between {{ min }} and {{ max }}.',
+          ),
         ],
       ])
       ->add('submit', FormTypes\SubmitType::class, [

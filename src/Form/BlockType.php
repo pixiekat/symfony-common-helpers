@@ -27,20 +27,18 @@ class BlockType extends AbstractType {
           'placeholder' => 'social_links',
         ],
         'constraints' => [
-          new Assert\NotBlank([
-            'message' => 'Machine name should not be blank.',
-          ]),
-          new Assert\Length([
-            'max' => 255,
-            'maxMessage' => 'Machine name cannot be longer than {{ limit }} characters.',
-          ]),
+          new Assert\NotBlank(),
+          new Assert\Length(
+            max: 255,
+            maxMessage: 'Machine name cannot be longer than {{ limit }} characters.',
+          ),
           // Enforced here rather than left to convention: the name ends up in
           // CSS class names and Twig calls, so anything outside this set turns
           // into a rendering bug a long way from where it was typed.
-          new Assert\Regex([
-            'pattern' => '/^[a-z][a-z0-9_]*$/',
-            'message' => 'Machine name must be lowercase and may contain only letters, numbers and underscores, starting with a letter.',
-          ]),
+          new Assert\Regex(
+            pattern: '/^[a-z][a-z0-9_]*$/',
+            message: 'Machine name must be lowercase and may contain only letters, numbers and underscores, starting with a letter.',
+          )
         ],
       ])
       ->add('label', FormTypes\TextType::class, [
@@ -52,10 +50,10 @@ class BlockType extends AbstractType {
           'placeholder' => 'Socials',
         ],
         'constraints' => [
-          new Assert\Length([
-            'max' => 255,
-            'maxMessage' => 'Label cannot be longer than {{ limit }} characters.',
-          ]),
+          new Assert\Length(
+            max: 255,
+            maxMessage: 'Label cannot be longer than {{ limit }} characters.',
+          ),
         ],
       ])
       ->add('description', FormTypes\TextareaType::class, [
@@ -85,10 +83,10 @@ class BlockType extends AbstractType {
           'placeholder' => '_partials/_social-links.html.twig',
         ],
         'constraints' => [
-          new Assert\Length([
-            'max' => 255,
-            'maxMessage' => 'Template path cannot be longer than {{ limit }} characters.',
-          ]),
+          new Assert\Length(
+            max: 255,
+            maxMessage: 'Template override cannot be longer than {{ limit }} characters.',
+          ),
         ],
       ])
       ->add('weight', FormTypes\IntegerType::class, [
@@ -98,14 +96,12 @@ class BlockType extends AbstractType {
           'class' => 'form-control',
         ],
         'constraints' => [
-          new Assert\NotNull([
-            'message' => 'Weight should not be blank.',
-          ]),
-          new Assert\Range([
-            'min' => -50,
-            'max' => 50,
-            'notInRangeMessage' => 'Weight must be between {{ min }} and {{ max }}.',
-          ]),
+          new Assert\NotNull(),
+          new Assert\Range(
+            min: -50,
+            max: 50,
+            notInRangeMessage: 'Weight must be between {{ min }} and {{ max }}.',
+          )
         ],
       ])
       ->add('enabled', FormTypes\CheckboxType::class, [

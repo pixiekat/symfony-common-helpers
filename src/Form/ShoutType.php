@@ -41,10 +41,10 @@ class ShoutType extends AbstractType {
           'autocomplete' => 'nickname',
         ],
         'constraints' => [
-          new Assert\Length([
-            'max' => 64,
-            'maxMessage' => 'Your name cannot be longer than {{ limit }} characters.',
-          ]),
+          new Assert\Length(
+            max: 64,
+            maxMessage: 'Name cannot be longer than {{ limit }} characters.',
+          ),
         ],
       ]);
     }
@@ -59,13 +59,13 @@ class ShoutType extends AbstractType {
           'placeholder' => 'Say something…',
         ],
         'constraints' => [
-          new Assert\NotBlank([
-            'message' => 'Say something first!',
-          ]),
-          new Assert\Length([
-            'max' => Entity\Shout::MAX_BODY_LENGTH,
-            'maxMessage' => 'Keep it under {{ limit }} characters.',
-          ]),
+          new Assert\NotBlank(
+            message: 'Say something first!',
+          ),
+          new Assert\Length(
+            max: Entity\Shout::MAX_BODY_LENGTH,
+            maxMessage: 'Keep it under {{ limit }} characters.',
+          ),
         ],
       ])
       ->add('submit', FormTypes\SubmitType::class, [

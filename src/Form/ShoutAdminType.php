@@ -42,13 +42,11 @@ class ShoutAdminType extends AbstractType {
           'rows' => 4,
         ],
         'constraints' => [
-          new Assert\NotBlank([
-            'message' => 'Message should not be blank.',
-          ]),
-          new Assert\Length([
-            'max' => Entity\Shout::MAX_BODY_LENGTH,
-            'maxMessage' => 'Message cannot be longer than {{ limit }} characters.',
-          ]),
+          new Assert\NotBlank(),
+          new Assert\Length(
+            max: Entity\Shout::MAX_BODY_LENGTH,
+            maxMessage: 'Message cannot be longer than {{ limit }} characters.',
+          ),
         ],
       ])
       ->add('channel', FormTypes\TextType::class, [
@@ -58,9 +56,9 @@ class ShoutAdminType extends AbstractType {
           'maxlength' => 64,
         ],
         'constraints' => [
-          new Assert\NotBlank([
-            'message' => 'Channel should not be blank.',
-          ]),
+          new Assert\NotBlank(
+            message: 'Channel should not be blank.',
+          ),
         ],
       ])
       ->add('status', FormTypes\EnumType::class, [

@@ -22,13 +22,13 @@ class VocabularyType extends AbstractType {
           'placeholder' => 'Enter vocabulary label',
         ],
         'constraints' => [
-          new Assert\NotBlank([
-            'message' => 'Label should not be blank.',
-          ]),
-          new Assert\Length([
-            'max' => 255,
-            'maxMessage' => 'Label cannot be longer than {{ limit }} characters.',
-          ]),
+          new Assert\NotBlank(
+            message: 'Label should not be blank.',
+          ),
+          new Assert\Length(
+            max: 255,
+            maxMessage: 'Label cannot be longer than {{ limit }} characters.',
+          ),
         ],
       ])
       ->add('name', FormTypes\TextType::class, [
@@ -38,13 +38,13 @@ class VocabularyType extends AbstractType {
           'placeholder' => 'Enter vocabulary name',
         ],
         'constraints' => [
-          new Assert\NotBlank([
-            'message' => 'Name should not be blank.',
-          ]),
-          new Assert\Length([
-            'max' => 255,
-            'maxMessage' => 'Name cannot be longer than {{ limit }} characters.',
-          ]),
+          new Assert\NotBlank(
+            message: 'Name should not be blank.',
+          ),
+          new Assert\Length(
+            max: 255,
+            maxMessage: 'Name cannot be longer than {{ limit }} characters.',
+          ),
         ],
       ])
       ->add('description', FormTypes\TextareaType::class, [

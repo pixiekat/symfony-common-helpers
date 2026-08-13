@@ -34,17 +34,15 @@ class BlockItemType extends AbstractType {
           'placeholder' => 'bluesky_personal',
         ],
         'constraints' => [
-          new Assert\NotBlank([
-            'message' => 'Machine name should not be blank.',
-          ]),
-          new Assert\Length([
-            'max' => 255,
-            'maxMessage' => 'Machine name cannot be longer than {{ limit }} characters.',
-          ]),
-          new Assert\Regex([
-            'pattern' => '/^[a-z][a-z0-9_]*$/',
-            'message' => 'Machine name must be lowercase and may contain only letters, numbers and underscores, starting with a letter.',
-          ]),
+          new Assert\NotBlank(),
+          new Assert\Length(
+            max: 255,
+            maxMessage: 'Machine name cannot be longer than {{ limit }} characters.',
+          ),
+          new Assert\Regex(
+            pattern: '/^[a-z][a-z0-9_]*$/',
+            message: 'Machine name must be lowercase and may contain only letters, numbers and underscores, starting with a letter.',
+          ),
         ],
       ])
       ->add('label', FormTypes\TextType::class, [
@@ -55,10 +53,10 @@ class BlockItemType extends AbstractType {
           'class' => 'form-control',
         ],
         'constraints' => [
-          new Assert\Length([
-            'max' => 255,
-            'maxMessage' => 'Label cannot be longer than {{ limit }} characters.',
-          ]),
+          new Assert\Length(
+            max: 255,
+            maxMessage: 'Label cannot be longer than {{ limit }} characters.',
+          ),
         ],
       ])
       ->add('url', FormTypes\UrlType::class, [
@@ -73,14 +71,14 @@ class BlockItemType extends AbstractType {
           'placeholder' => 'https://',
         ],
         'constraints' => [
-          new Assert\Length([
-            'max' => 512,
-            'maxMessage' => 'URL cannot be longer than {{ limit }} characters.',
-          ]),
-          new Assert\Url([
-            'message' => 'That does not look like a valid URL.',
-            'requireTld' => true,
-          ]),
+          new Assert\Length(
+            max: 512,
+            maxMessage: 'URL cannot be longer than {{ limit }} characters.',
+          ),
+          new Assert\Url(
+            message: 'That does not look like a valid URL.',
+            requireTld: true,
+          ),
         ],
       ])
       ->add('icon', FormTypes\TextType::class, [
@@ -91,10 +89,10 @@ class BlockItemType extends AbstractType {
           'class' => 'form-control',
         ],
         'constraints' => [
-          new Assert\Length([
-            'max' => 255,
-            'maxMessage' => 'Icon cannot be longer than {{ limit }} characters.',
-          ]),
+          new Assert\Length(
+            max: 255,
+            maxMessage: 'Icon cannot be longer than {{ limit }} characters.',
+          ),
         ],
       ])
       ->add('weight', FormTypes\IntegerType::class, [
@@ -104,14 +102,12 @@ class BlockItemType extends AbstractType {
           'class' => 'form-control',
         ],
         'constraints' => [
-          new Assert\NotNull([
-            'message' => 'Weight should not be blank.',
-          ]),
-          new Assert\Range([
-            'min' => -50,
-            'max' => 50,
-            'notInRangeMessage' => 'Weight must be between {{ min }} and {{ max }}.',
-          ]),
+          new Assert\NotNull(),
+          new Assert\Range(
+            min: -50,
+            max: 50,
+            notInRangeMessage: 'Weight must be between {{ min }} and {{ max }}.',
+          ),
         ],
       ])
       ->add('enabled', FormTypes\CheckboxType::class, [
