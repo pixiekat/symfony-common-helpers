@@ -36,9 +36,18 @@ final class TaxonomyVoter extends BaseVoter implements Interfaces\Security\Voter
     }
 
     switch ($attribute) {
+      case self::TAXONOMY_REMOVE_TERM_VOCABULARY:
+        // A locked block is one somebody deliberately protected — usually
+        // because a template calls place_block() on it and deleting it would
+        // leave a hole in the page. Only a sysadmin gets past that.
+        if ($subject instanceof Entity\Vocabulary && $subject->isLocked()) {
+          return $this->isSysAdmin();
+        }
+
+        return $this->isSysAdmin() || $this->hasRole('ROLE_ADMIN');
+
       default:
-        return ($this->isSysAdmin() || $this->hadRole('ROLE_ADMIN'));
-        break;
+        return $this->isSysAdmin() || $this->hasRole('ROLE_ADMIN');
     }
 
     // If none of the above, deny access
