@@ -10,30 +10,22 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 class UserLoginType extends AbstractType {
   public function buildForm(FormBuilderInterface $builder, array $options): void {
     $builder
-      ->add('_username', FormType\TextType::class, [
+      ->add('_username', FormType\EmailType::class, [
         'label' => 'Username',
-        'label_attr' => [
-          'for' => 'floatingInput',
-        ],
-        'attr' => [
-          'id' => 'floatingInput',
-          'name' => '_username',
-          'placeholder' => 'Enter Username',
-        ],
         'required' => true,
-        'row_attr' => [
-          'class' => 'form-floating mb-3',
+        'attr' => [
+            'class' => 'form-control',              // Bootstrap floating labels need this
+            'placeholder' => 'Enter Username',      // and this
+            'autocomplete' => 'username',           // lets password managers autofill
         ],
-      ])
+        'row_attr' => ['class' => 'form-floating mb-3'],
+        ])
       ->add('_password', FormType\PasswordType::class, [
         'label' => 'Password',
-        'label_attr' => [
-          'for' => 'floatingPassword',
-        ],
         'attr' => [
-          'id' => 'floatingPassword',
-          'name' => '_password',
-          'placeholder' => 'Enter Password',
+            'class' => 'form-control',
+            'placeholder' => 'Enter Password',
+            'autocomplete' => 'current-password',
         ],
         'required' => true,
         'row_attr' => [
