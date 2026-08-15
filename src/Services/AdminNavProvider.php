@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Pixiekat\SymfonyHelpers\Services;
 
 use Pixiekat\SymfonyHelpers\Interfaces\Security\Voter as Voters;
+use Pixiekat\SymfonyHelpers\Interfaces\Services\AdminNavProviderInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /**
@@ -33,7 +34,17 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
  * on that would make the menu quietly depend on voter internals, and because it
  * short-circuits before doing authorization work for a feature that is off.
  */
-class AdminNavProvider {
+class AdminNavProvider implements AdminNavProviderInterface {
+
+  /**
+   * The helpers' own sections sit at 0 — the baseline other bundles position
+   * themselves relative to.
+   *
+   * @return int The priority.
+   */
+  public function priority(): int {
+    return 0;
+  }
 
   /**
    * Constructor.

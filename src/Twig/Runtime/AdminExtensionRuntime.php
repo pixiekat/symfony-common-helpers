@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Pixiekat\SymfonyHelpers\Twig\Runtime;
 
-use Pixiekat\SymfonyHelpers\Services\AdminNavProvider;
+use Pixiekat\SymfonyHelpers\Services\AdminNavRegistry;
 use Pixiekat\SymfonyHelpers\Services\FeatureChecker;
 use Twig\Extension\RuntimeExtensionInterface;
 
@@ -16,11 +16,11 @@ class AdminExtensionRuntime implements RuntimeExtensionInterface {
   /**
    * Constructor.
    *
-   * @param AdminNavProvider $nav Builds the bundle's menu sections.
+   * @param AdminNavRegistry $nav Collects menu sections from every bundle.
    * @param FeatureChecker $features Which parts of the bundle are switched on.
    */
   public function __construct(
-    private readonly AdminNavProvider $nav,
+    private readonly AdminNavRegistry $nav,
     private readonly FeatureChecker $features,
   ) {  }
 

@@ -62,3 +62,13 @@ services:
       # services rather than the container itself.
       $container: '@service_container'
       $availableChannels: '%pixiekat.logging.available_channels%'
+
+  # Every AdminNavProviderInterface implementation, from this bundle and from
+  # any other, arrives here. tagged_iterator rather than tagged_locator because
+  # all of them are needed to build the menu — there is nothing to look up by
+  # name — and iterator keeps construction lazy.
+  Pixiekat\SymfonyHelpers\Services\AdminNavRegistry:
+    public: true
+    tags: ['controller.service_arguments']
+    arguments:
+      $providers: !tagged_iterator pixiekat.admin_nav_provider
