@@ -42,7 +42,7 @@ use Pixiekat\SymfonyHelpers\Entity\AuditLog;
  *
  * @see \Pixiekat\SymfonyHelpers\Services\AuditLogManager
  *
- * @deprecated since 1.1, to be removed in 2.0.
+ * @deprecated since 1.1, to be removed in 3.0.
  */
 trait AuditLogManagerDeprecatedTrait {
 

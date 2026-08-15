@@ -44,7 +44,7 @@ namespace Pixiekat\SymfonyHelpers\Traits\Deprecated;
  * @see \Pixiekat\SymfonyHelpers\Entity\AuditLog
  * @see \Pixiekat\SymfonyHelpers\Interfaces\Entity\AuditLogInterface
  *
- * @deprecated since 1.1, to be removed in 2.0.
+ * @deprecated since 1.1, to be removed in 3.0.
  */
 trait AuditLogDeprecatedTrait {
 
