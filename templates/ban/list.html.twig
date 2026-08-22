@@ -2,11 +2,6 @@
 
 {% block title %}Banned IP Addresses{% endblock %}
 
-{% block stylesheets %}
-  {{ parent() }}{# keep the layout/shell's own styles; we only ADD ban.css #}
-  <link rel="stylesheet" href="{{ asset('bundles/pixiekatsymfonyhelpers/styles/ban.css') }}">
-{% endblock %}
-
 {% block content %}
   <div class="container">
     <div class="row">
