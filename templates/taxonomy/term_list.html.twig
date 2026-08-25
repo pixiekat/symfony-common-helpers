@@ -24,6 +24,9 @@
             <thead>
               <tr>
                 <th>{{ 'Name'|trans }}</th>
+                <th>{{ 'Code'|trans }}</th>
+                <th>{{ 'Source'|trans }}</th>
+                <th>{{ 'Parent Term'|trans }}</th>
                 <th>{{ 'Action'|trans }}</th>
               </tr>
             </thead>
@@ -31,7 +34,11 @@
               {% if terms is not empty %}
                 {% for term in terms %}
                   <tr>
-                    <td>{{ term.name }}</td>                    <td>
+                    <td>{{ term.name }}</td>
+                    <td>{{ term.code }}</td>
+                    <td>{{ term.source }}</td>
+                    <td>{{ term.parent.name|default('None') }}</td>
+                    <td>
                       {% if is_granted(constant('Pixiekat\\SymfonyHelpers\\Interfaces\\Security\\Voter\\TaxonomyVoterInterface::TAXONOMY_EDIT_TERM_VOCABULARY'), vocabulary) %}
                         <a class="btn btn-primary" href="{{ path('pixiekat_symfony_helpers_taxonomy_term_edit', { 'vocabulary': vocabulary.id, 'term': term.id }) }}">Edit</a>
                       {% endif %}

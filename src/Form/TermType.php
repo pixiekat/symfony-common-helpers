@@ -31,6 +31,49 @@ class TermType extends AbstractType {
           ),
         ],
       ])
+      ->add('code', FormTypes\TextType::class, [
+        'label' => 'Code',
+        'required' => false,
+        'attr' => [
+          'class' => 'form-control',
+          'placeholder' => 'Enter code (optional)',
+        ],
+        'constraints' => [
+          new Assert\Length(
+            max: 255,
+            maxMessage: 'Code cannot be longer than {{ limit }} characters.',
+          ),
+        ],
+      ])
+      ->add('source', FormTypes\TextType::class, [
+        'label' => 'Source',
+        'required' => false,
+        'attr' => [
+          'class' => 'form-control',
+          'placeholder' => 'Enter source (optional)',
+        ],
+        'constraints' => [
+          new Assert\Length(
+            max: 255,
+            maxMessage: 'Source cannot be longer than {{ limit }} characters.',
+          ),
+        ],
+      ])
+      ->add('parent', EntityType::class, [
+        'class' => Entity\Term::class,
+        'label' => 'Parent Term',
+        'required' => false,
+        'placeholder' => 'Select a parent term (optional)',
+        'attr' => [
+          'class' => 'form-control',
+        ],
+        'query_builder' => function (Repository\TermRepository $repo) use ($options) {
+          return $repo->createQueryBuilder('t')
+            ->where('t.vocabulary = :vocabulary')
+            ->setParameter('vocabulary', $options['data']->getVocabulary())
+            ->orderBy('t.name', 'ASC');
+        },
+      ])
       ->add('weight', FormTypes\IntegerType::class, [
         'label' => 'Weight',
         'attr' => [
