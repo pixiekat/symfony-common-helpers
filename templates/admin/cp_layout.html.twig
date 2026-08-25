@@ -112,6 +112,10 @@
       </main>
     </div>
 
-    <p class="vb-footer">{% block admin_footer %}{{ block('admin_brand') }}{% endblock %}</p>
+    <div class="vb-footer">
+      {% block admin_footer %}
+        {{ block('admin_brand') }}
+      {% endblock %}
+    </div>
   </div>
 {% endblock %}
