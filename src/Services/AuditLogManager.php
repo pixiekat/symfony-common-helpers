@@ -139,11 +139,13 @@ class AuditLogManager {
    * @param string $action Machine key for what happened.
    * @param object|null $target The thing acted upon.
    * @param array $context Structured detail.
+   * @param string $severity The severity level of the log entry.
+   *  See \Psr\Log\LogLevel for the allowed values.
    *
    * @return void
    */
-  public function logToLogger(string $action, ?object $target = null, array $context = []): void {
-    $this->writeToChannel($action, $target, $context);
+  public function logToLogger(string $action, ?object $target = null, array $context = [], string $severity = \Psr\Log\LogLevel::INFO): void {
+    $this->writeToChannel($action, $target, $context, $severity);
   }
 
   /**
@@ -237,10 +239,12 @@ class AuditLogManager {
    * @param string $action The action key.
    * @param object|null $target The thing acted upon.
    * @param array $context Structured detail.
+   * @param string $severity The severity level of the log entry.
+   *  See \Psr\Log\LogLevel for the allowed values.
    *
    * @return void
    */
-  private function writeToChannel(string $action, ?object $target, array $context): void {
+  private function writeToChannel(string $action, ?object $target, array $context, string $severity = \Psr\Log\LogLevel::INFO): void {
     $actor = $this->security->getUser()?->getUserIdentifier() ?? AuditLog::ACTOR_SYSTEM;
 
     $record = [
@@ -256,7 +260,7 @@ class AuditLogManager {
 
     // Caller context last so it cannot be clobbered by the derived keys, but
     // also cannot clobber them — array union keeps the left-hand side.
-    $this->logging->logToChannel(self::CHANNEL, 'info', $this->summarise($action, $actor, $record), $record + $context);
+    $this->logging->logToChannel(self::CHANNEL, $severity, $this->summarise($action, $actor, $record), $record + $context);
   }
 
   /**
