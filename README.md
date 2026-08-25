@@ -78,6 +78,37 @@ rather than by out-specifying selectors:
 .shoutbox { --shoutbox-gap: 1rem; }
 ```
 
+### Accessibility utilities
+
+The same stylesheet also carries `.visually-hidden` — content that stays in the
+accessibility tree while being invisible on screen. Use it for skip links, for
+`aria-live` regions, and to give repeated controls a distinguishable accessible
+name (a column of thirty identical "Edit" buttons is unusable in a screen
+reader):
+
+```twig
+<a class="skip-link visually-hidden" href="#main">Skip to content</a>
+
+<a href="{{ path('...', {id: item.id}) }}">
+    Edit<span class="visually-hidden"> {{ item.name }}</span>
+</a>
+```
+
+It is **not** a synonym for `display: none`. That, and `visibility: hidden`,
+remove the element from the accessibility tree altogether — a live region hidden
+that way announces nothing, and a skip link hidden that way cannot be focused.
+
+Two consequences of the "link it once, yourself" rule above are worth stating,
+because both surface as puzzling bugs rather than as obviously missing styles:
+
+* **A live region created by app-level JavaScript needs this stylesheet on
+  *every* page, not only the ones using a widget from this bundle.** A Turbo
+  Drive announcer is the usual case. Without the link, the region renders as
+  visible text in the middle of the page.
+* **Control panel pages already have it** via `admin-cp.css`, which declares its
+  own copy so the layout stays self-contained. Change one declaration and you
+  must change both.
+
 Assets resolve through AssetMapper automatically (the bundle's `Resources/public`
 is mapped to `bundles/pixiekatsymfonyhelpers`), and `assets:install` also copies
 them into `public/bundles/` for apps not using AssetMapper — so `asset()` works

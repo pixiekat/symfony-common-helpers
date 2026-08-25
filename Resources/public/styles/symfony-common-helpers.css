@@ -60,11 +60,7 @@
   font-style: italic;
 }
 
-/*
- * Honour a reduced-motion preference for anything the host adds on top — the
- * widget itself does not animate, but this keeps a transition added downstream
- * from ignoring the setting.
- */
+/* Honour a reduced-motion preference for anything the host adds on top — the widget itself does not animate, but this keeps a transition added downstream from ignoring the setting. */
 @media (prefers-reduced-motion: reduce) {
   .shoutbox *,
   .shoutbox *::before,
@@ -92,4 +88,27 @@ section.block:not(:last-child) {
 .block--item-prefix {
   display: block;
   margin-bottom: 0.2rem;
+}
+
+/* Generic, app-agnostic helpers. Nothing here sets colour or type, so they drop into
+  any consuming site without fighting its design.
+
+  Should not be considered a replacement for a11y testing, but rather a convenience
+  for developers to use in the course of building accessible features.
+
+  Note: admin-cp.css declares its own copy, because the control panel layout
+  links only that file. The duplication is deliberate; keep the two in step.
+
+  @see https://developer.paciellogroup.com/blog/2013/03/how-to-hide-content-for-accessibility/
+  @see https://www.scottohara.me/blog/2019/05/20/visually-hidden.html */
+.visually-hidden:not(:focus):not(:active) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
