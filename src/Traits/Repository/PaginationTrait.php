@@ -15,11 +15,9 @@ trait PaginationTrait {
   public function paginateStandalone(int $page, int $perPage = 25, ?array $orderBy = []): Paginator {
     $page = max(1, $page);
 
-    $orderBy = $orderBy ?: ['id' => 'DESC'];
+    $orderBy = $orderBy ?: ['updatedAt' => 'DESC', 'id' => 'DESC'];
 
     $query = $this->createQueryBuilder('p')
-      ->orderBy('p.updatedAt', 'DESC')
-      ->addOrderBy('p.id', 'DESC')
       ->setFirstResult(($page - 1) * $perPage)
       ->setMaxResults($perPage)
     ;
