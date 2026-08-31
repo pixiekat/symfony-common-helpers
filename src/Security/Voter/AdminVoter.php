@@ -31,11 +31,15 @@ final class AdminVoter extends BaseVoter implements Interfaces\Security\Voter\Ad
     }
 
     switch ($attribute) {
-      case self::ADMIN_ADMINISTER:
-        return $this->isSysAdmin() || $this->hasRole('ROLE_ADMIN');
+      // don't do anything for self::ADMIN_ADMINISTER here.
+      // instead each app should implement an AdminVoter and declare the rule there.
+      //case self::ADMIN_ADMINISTER:
+      //  return $this->isSysAdmin() || $this->hasRole('ROLE_ADMIN');
 
       default:
-        // Return false for default since if we get to this point, we don't want them to get to the admin panel.
+        // by default, we deny so that an app can pick it up and override it.
+        // symfony will take the first granted so if we return true here,
+        // and apps override will never be called.
         return false;
     }
   }

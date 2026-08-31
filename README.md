@@ -258,6 +258,7 @@ pattern as the existing taxonomy screens:
 
 | Section | Path | Permission |
 | --- | --- | --- |
+| Control panel index | `/admincp` | `AdminVoterInterface::ADMIN_ADMINISTER` |
 | Blocks | `/admincp/blocks` | `BlockVoterInterface::BLOCK_ADMINISTER` |
 | Block items | `/admincp/blocks/{block}/items` | `BlockVoterInterface::BLOCK_ITEM_*` |
 | Shoutbox | `/admincp/shoutbox` | `ShoutboxVoterInterface::SHOUTBOX_ADMINISTER` |
@@ -277,6 +278,101 @@ The shoutbox moderation queue shows every status, including the spam and
 soft-deleted rows the public view hides. Status changes are POSTs with CSRF
 tokens rather than links — a state-changing GET can be fired by a prefetcher, an
 `<img>` on a hostile page, or a mail client preview.
+
+### Deciding who is an admin
+
+This package does **not** decide `AdminVoterInterface::ADMIN_ADMINISTER`, the
+attribute guarding `/admincp`. What counts as "an admin" is application-specific,
+so `Pixiekat\SymfonyHelpers\Security\Voter\AdminVoter` denies it and leaves the
+answer to your app. Until you supply one, admin routes answer 403 — the package
+fails closed rather than leaving the control panel open to anyone logged in.
+
+To supply one, extend the interface and implement the voter:
+
+```php
+// src/Interfaces/Security/Voter/AdminVoterInterface.php
+namespace App\Interfaces\Security\Voter;
+
+use Pixiekat\SymfonyHelpers\Interfaces\Security\Voter\AdminVoterInterface as HelpersAdminVoterInterface;
+
+interface AdminVoterInterface extends HelpersAdminVoterInterface {
+  public const PERMISSION_CAN_ACCESS_REPORTS = 'can_access_reports';
+  // …whatever else your app gates on
+}
+```
+
+```php
+// src/Security/Voter/AdminVoter.php
+namespace App\Security\Voter;
+
+use App\Interfaces\Security\Voter\AdminVoterInterface;
+use Pixiekat\SymfonyHelpers\Security\Voter\BaseVoter;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\Vote;
+use Symfony\Component\Security\Core\User\UserInterface;
+
+class AdminVoter extends BaseVoter implements AdminVoterInterface {
+
+  protected function supports(string $attribute, mixed $subject): bool {
+    return in_array($attribute, $this->getAttributes(), true);
+  }
+
+  protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool {
+    $user = $token->getUser();
+    if (!$user instanceof UserInterface) {
+      return false;
+    }
+
+    return match ($attribute) {
+      self::ADMIN_ADMINISTER => $this->hasAtLeastOneAdminRole($user, $this->getAdminRoles()),
+      self::PERMISSION_CAN_ACCESS_REPORTS => $this->hasGlobalAdminRole($user, $this->getAdminRoles()),
+      default => false,
+    };
+  }
+
+  /**
+   * The roles this app treats as administrative. Every name needs the ROLE_
+   * prefix — see the note below.
+   */
+  private function getAdminRoles(): array {
+    return ['ROLE_SUPER_ADMIN', 'ROLE_SYSADMIN', 'ROLE_ADMIN', 'ROLE_DATA_STEWARD'];
+  }
+}
+```
+
+Autoconfigure tags it as a voter; no service wiring needed. `BaseVoter` gives you
+`hasGlobalAdminRole()` (the `ROLE_*_ADMIN` set only), `hasAtLeastOneAdminRole()`
+(that set plus whatever you pass in), `isSysAdmin()`, `isAuthenticated()` and
+`isFirstUser()` to build the decision out of.
+
+**`extends HelpersAdminVoterInterface` is load-bearing, not tidiness.**
+`BaseVoter::getAttributes()` builds its supported-attribute list by reflecting
+over the constants visible on the voter class — that is, constants reachable
+through its parents and its interfaces. Referencing `ADMIN_ADMINISTER` by its
+fully-qualified name inside `voteOnAttribute()` does nothing for that list. Skip
+the `extends` and your `supports()` returns false for `administer admin`, the
+voter abstains on every admin route, and the match arm you wrote is unreachable
+code that never runs and never errors.
+
+Naming it as `self::ADMIN_ADMINISTER` rather than by FQCN is worth doing for the
+same reason: `self::` only resolves if the constant really is inherited, which is
+the same condition `getAttributes()` tests. Break one and you break the other,
+loudly, instead of getting a voter that silently abstains.
+
+Both voters vote. Under Symfony's default `affirmative` strategy this package
+votes DENIED and yours votes GRANTED, so yours decides. If you have changed
+`access_decision_manager.strategy` to `unanimous`, this package's DENIED will
+veto yours — set `strategy: affirmative`, or give your voter a higher priority
+and use `priority` strategy.
+
+**Custom roles must start with `ROLE_`.** Symfony's `RoleVoter` skips any
+attribute without that prefix, so `isGranted('DATA_STEWARD')` is not false, it is
+unanswerable: the voter abstains and, with nothing else granting it, the result
+is a 403 with no explanation anywhere. `role_hierarchy` will expand an unprefixed
+role perfectly happily and the profiler will list it among a user's reachable
+roles, which makes this a genuinely nasty afternoon. `hasAtLeastOneAdminRole()`
+and `hasGlobalAdminRole()` call `isGranted()` on every name you hand them, so an
+unprefixed entry in your `getAdminRoles()` is silently ignored.
 
 ## Contact
 
