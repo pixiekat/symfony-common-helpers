@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Pixiekat\SymfonyHelpers\Security\Voter;
 
+use Pixiekat\SymfonyHelpers\Interfaces as PixieInterfaces;
 use Pixiekat\SymfonyHelpers\Services\FeatureChecker;
 use Pixiekat\SymfonyHelpers\Traits as PixieTraits;
 use Psr\Log\LoggerInterface;
@@ -62,6 +63,40 @@ abstract class BaseVoter extends Voter {
    */
   public function hasRole(string $role): bool {
     return $this->security->isGranted($role);
+  }
+
+  protected function hasGlobalAdminRole(PixieInterfaces\Entity\HelpersUserInterface $user, array $adminRoles = []): bool {
+    // check if the user has at least one of the global admin roles
+    // ROLE_SYSADMIN is the real name; ROLE_SYS_ADMIN is a long-standing typo
+    // kept for compatibility. See hasAtLeastOneAdminRole() on the ROLE_ prefix.
+    $globalAdminRoles = ['ROLE_SYSADMIN', 'ROLE_SYS_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_ADMIN'];
+    foreach ($globalAdminRoles as $role) {
+      if ($this->security->isGranted($role)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  protected function hasAtLeastOneAdminRole(PixieInterfaces\Entity\HelpersUserInterface $user, array $adminRoles = []): bool {
+    // merge $adminRoles with standard "default" admin roles and strip out duplicates
+    // Every name in this list has to carry the ROLE_ prefix: Symfony's RoleVoter
+    // skips any attribute without it, so isGranted('CONTENT_ADMIN') — as this
+    // line used to read — is not merely false, it is unanswerable. Nothing votes,
+    // and the abstention reads as a denial.
+    //
+    // ROLE_SYS_ADMIN was likewise a typo for ROLE_SYSADMIN and never matched
+    // anything. Both spellings are kept so applications that adopted the typo'd
+    // name keep working.
+    $adminRoles = array_unique(array_merge($adminRoles, ['ROLE_SYSADMIN', 'ROLE_SYS_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_ADMIN', 'ROLE_CONTENT_ADMIN']));
+    foreach ($adminRoles as $role) {
+      if ($this->security->isGranted($role)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**
