@@ -12,6 +12,8 @@ class AdminController extends AbstractController {
 
     #[IsGranted(PixieInterfaces\Security\Voter\AdminVoterInterface::ADMIN_ADMINISTER, message: 'You do not have permission to access the admin panel.')]
     #[Route('/admin/index', name: 'pixiekat_symfony_helpers_admin_index')]
+    #[Route('/admincp', name: 'pixiekat_symfony_helpers_admin_index_alias')]
+    #[Route('/admincp/index', name: 'pixiekat_symfony_helpers_admin_index_alias2')]
     public function index(): Response {
         return $this->render('@PixiekatSymfonyHelpers/admin/admin_index.html.twig');
     }
