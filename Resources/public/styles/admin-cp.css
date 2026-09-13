@@ -283,3 +283,61 @@ select, textarea {
   .vb-content, .vb-header { border: 0; }
   .vb-header { background: none; color: #000; }
 }
+
+/* ── Per-row action menus ─────────────────────────────────────────────────
+   [Actions ▸] in a table cell, collapsing a stack of buttons into one control.
+
+   <details>/<summary> again, for the reason the navigation uses it: no
+   JavaScript, and keyboard operation comes free — Enter and Space toggle a
+   <summary>, and the open state is exposed to assistive technology without an
+   aria-expanded anybody has to remember to update.
+
+   Explicitly NOT a hover menu. :hover has no keyboard equivalent and nothing
+   sensible on a touch screen, and the checkbox-and-label hack that gets used for
+   CSS dropdowns produces a control that reads as a checkbox to a screen reader.
+   Neither is worth the visual tidiness.
+
+   The panel expands the row rather than floating over it. An absolutely
+   positioned panel is clipped the moment the table sits inside an
+   overflow-x: auto wrapper for narrow screens — which is exactly where a long
+   row of buttons was the problem in the first place. A taller row is never
+   clipped, and with CSS off the whole thing degrades to a list of links and
+   submit buttons, which is what it is. */
+.vb-actions { display: inline-block; }
+
+.vb-actions > summary {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .2rem .5rem; cursor: pointer;
+  border: 1px solid var(--vb-border); background: var(--vb-alt1);
+  font-size: .85rem; white-space: nowrap;
+  list-style: none;
+}
+.vb-actions > summary::-webkit-details-marker { display: none; }
+.vb-actions > summary::after { content: '▸'; font-size: .9em; }
+.vb-actions[open] > summary::after { content: '▾'; }
+
+/* A visible focus ring, because the summary IS the control and the default
+   outline is what a keyboard user navigates by. Never remove it. */
+.vb-actions > summary:focus-visible { outline: 2px solid var(--vb-tcat); outline-offset: 1px; }
+
+.vb-actions .action-list {
+  list-style: none; margin: .3rem 0 0; padding: .3rem;
+  border: 1px solid var(--vb-border); background: var(--vb-panel);
+  display: flex; flex-direction: column; gap: .3rem;
+  min-width: 12rem;
+}
+
+/* Links and forms sit side by side in here, so both are made to look like one
+   kind of row rather than one being a bare anchor next to a button. */
+.vb-actions .action-list > li { margin: 0; }
+.vb-actions .action-list form { margin: 0; }
+.vb-actions .action-list a,
+.vb-actions .action-list button { width: 100%; text-align: left; font-size: .85rem; }
+
+/* Paper gets the actions expanded and the controls hidden: a printed table wants
+   to show WHAT could be done, not offer buttons nobody can press. */
+@media print {
+  .vb-actions > summary { display: none; }
+  .vb-actions .action-list form { display: none; }
+  .vb-actions .action-list { border: 0; padding: 0; }
+}
