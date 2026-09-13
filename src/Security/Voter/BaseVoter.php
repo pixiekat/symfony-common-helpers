@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Pixiekat\SymfonyHelpers\Security\Voter;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Pixiekat\SymfonyHelpers\Interfaces as PixieInterfaces;
 use Pixiekat\SymfonyHelpers\Services\FeatureChecker;
 use Pixiekat\SymfonyHelpers\Traits as PixieTraits;
@@ -26,6 +27,7 @@ abstract class BaseVoter extends Voter {
     protected readonly Security $security,
     protected readonly LoggerInterface $logger,
     protected readonly FeatureChecker $features,
+    protected readonly EntityManagerInterface $entityManager,
   ) {  }
 
   /**
