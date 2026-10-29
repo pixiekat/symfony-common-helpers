@@ -2,7 +2,6 @@
 declare(strict_types=1);
 namespace Pixiekat\SymfonyHelpers\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
 use Pixiekat\SymfonyHelpers\Interfaces;
 use Pixiekat\SymfonyHelpers\Repository;
 use Pixiekat\SymfonyHelpers\Repository\AuditLogRepository;
@@ -16,7 +15,12 @@ use Doctrine\ORM\Mapping as ORM;
   usage: 'READ_ONLY',
   region: 'default_entity_region'
 )]
-#[ApiResource]
+// Deliberately NOT an API Platform resource (bans are moderation data: exposing them let any logged-in user add or lift bans).
+// API Platform loads every bundle's Entity/ folder automatically, so a bare
+// #[ApiResource] here gave EVERY application using this bundle full
+// create/read/update/delete on it, with no access check. An application that
+// needs it over HTTP should declare its own resource with explicit
+// operations and a `security` expression on each.
 class Ban implements Interfaces\Entity\BanInterface {
   use PixieTraits\EntityIdTrait;
 

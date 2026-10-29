@@ -2,7 +2,6 @@
 declare(strict_types=1);
 namespace Pixiekat\SymfonyHelpers\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -42,7 +41,12 @@ use Symfony\Component\Uid\Uuid;
   usage: 'NONSTRICT_READ_WRITE',
   region: 'default_entity_region'
 )]
-#[ApiResource]
+// Deliberately NOT an API Platform resource (vocabularies are admin-managed reference data).
+// API Platform loads every bundle's Entity/ folder automatically, so a bare
+// #[ApiResource] here gave EVERY application using this bundle full
+// create/read/update/delete on it, with no access check. An application that
+// needs it over HTTP should declare its own resource with explicit
+// operations and a `security` expression on each.
 class Term {
 
   use PixieTraits\Entity\EntityIdTrait;
