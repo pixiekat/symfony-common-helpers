@@ -28,6 +28,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\ResetPassword\Controller\ResetPasswordControllerTrait;
 use SymfonyCasts\Bundle\ResetPassword\Exception\ResetPasswordExceptionInterface;
 use SymfonyCasts\Bundle\ResetPassword\ResetPasswordHelperInterface;
+use Symfony\Component\Uid\Uuid;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 
 class UserController extends AbstractController {
@@ -209,20 +210,48 @@ class UserController extends AbstractController {
     ]);
   }
 
+  /**
+   * The link in the "confirm your email" message.
+   *
+   * WORKS LOGGED OUT. It used to require a completed login, which only
+   * worked because nothing stopped unverified accounts from logging in. An
+   * app that does stop them (a user checker refusing inactive accounts)
+   * would otherwise leave new people with no way to verify at all.
+   *
+   * Logged out, the link itself says who it's for: the `id` query parameter
+   * (the user's UUID), which the senders add and SIGN along with the email
+   * address and an expiry. Changing the id breaks the signature, so it
+   * can't be used to verify someone else.
+   */
+  #[IsGranted('PUBLIC_ACCESS')]
   #[Route('/user/verify-email', name: 'pixiekat_symfony_helpers_verify_email')]
   public function verifyUserEmail(Request $request): Response {
-    $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+    $id = (string) $request->query->get('id');
+    $user = Uuid::isValid($id)
+      ? $this->entityManager->getRepository(AppEntity\User::class)->findOneBy(['uuid' => $id])
+      : null;
 
-    // validate email confirmation link, set User::$isVerified=true, and persist
+    if (!$user) {
+      $this->addFlash('error', // shown by the usual flash messages ('verify_email_error' was shown nowhere)
+          'This link to verify your email address is not valid. Please log in to get a new one.');
+      return $this->redirectToRoute('pixiekat_symfony_helpers_login');
+    }
+
+    // validate email confirmation link, activate the user, and persist
     try {
-        $this->emailVerifier->handleEmailConfirmation($request, $this->getUser());
+        $this->emailVerifier->handleEmailConfirmation($request, $user);
     } catch (VerifyEmailExceptionInterface $exception) {
-        $this->addFlash('verify_email_error', $this->translator->trans($exception->getReason(), [], 'VerifyEmailBundle'));
+        $this->addFlash('error', // shown by the usual flash messages ('verify_email_error' was shown nowhere)
+          $this->translator->trans($exception->getReason(), [], 'VerifyEmailBundle'));
 
-        return $this->redirectToRoute('pixiekat_symfony_helpers_register');
+        // To the login page, not registration: the account already exists,
+        // and logging in is how to get a fresh link.
+        return $this->redirectToRoute('pixiekat_symfony_helpers_login');
     }
 
     $this->addFlash('success', 'Your email address has been verified.');
+    // ($user used to be undefined here, so this line itself failed right
+    // after a successful verification.)
     $this->logger->info('User email address verified: ' . $user->getEmailAddress());
 
     return $this->redirectToRoute('pixiekat_symfony_helpers_login');

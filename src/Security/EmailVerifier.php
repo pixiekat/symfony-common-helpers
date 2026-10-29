@@ -65,17 +65,24 @@ final class EmailVerifier {
    * @throws VerifyEmailExceptionInterface
    */
   public function handleEmailConfirmation(Request $request, AppEntity\User $user): void {
-    if (method_exists($user, 'getEmail')) {
+    // The identifier MUST be the one the link was signed with, or every link
+    // is rejected as "for a different account". Both senders sign with the
+    // UUID when the user has one: sendEmailConfirmation() above, and apps'
+    // own mailers (e.g. Infosage's RegistrationMailer). This used to try
+    // getEmail()/getEmailAddress() FIRST, so for any user with a UUID no
+    // verification link could ever succeed. Keep this order in step with
+    // sendEmailConfirmation().
+    if (method_exists($user, 'getUuid') && $user->getUuid() !== null) {
+      $identifier = $user->getUuid()->__toString();
+    }
+    elseif (method_exists($user, 'getEmail')) {
         $identifier = $user->getEmail();
     }
     elseif (method_exists($user, 'getEmailAddress')) {
          $identifier = $user->getEmailAddress();
     }
-    elseif (method_exists($user, 'getUuid')) {
-      $identifier = $user->getUuid()->__toString();
-    }
     else {
-        throw new \LogicException('User entity must have getEmail() or getEmailAddress() method');
+        throw new \LogicException('User entity must have getUuid(), getEmail() or getEmailAddress() method');
     }
     $this->verifyEmailHelper->validateEmailConfirmationFromRequest($request, $identifier, $user->getEmailAddress());
 
