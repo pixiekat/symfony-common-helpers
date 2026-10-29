@@ -287,6 +287,24 @@ so `Pixiekat\SymfonyHelpers\Security\Voter\AdminVoter` denies it and leaves the
 answer to your app. Until you supply one, admin routes answer 403 — the package
 fails closed rather than leaving the control panel open to anyone logged in.
 
+### Roles come only from what's stored
+
+`EntityRolesTrait::getRoles()` returns the user's stored roles, plus
+`ROLE_USER` if there are none. Nothing is granted implicitly. Older versions
+quietly made **user id 1 a super admin** and gave **`ROLE_TESTER` to anyone with
+"TEST" in their last name**. Both were removed, because the first can't be seen or
+revoked from the control panel, and the second let people give themselves a role
+just by choosing a name.
+
+**Upgrading:** before deploying this version, save those roles on the accounts
+that relied on them (in the control panel, or directly in the `roles` column).
+Otherwise they lose them on their next request.
+
+`BaseVoter::isFirstUser()` still exists as a helper, but it grants nothing by
+itself.
+
+### Writing your admin voter
+
 To supply one, extend the interface and implement the voter:
 
 ```php
