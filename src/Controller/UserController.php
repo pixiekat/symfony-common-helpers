@@ -186,8 +186,8 @@ class UserController extends AbstractController {
 
         // generate a signed url and email it to the user
         $this->emailVerifier->sendEmailConfirmation('pixiekat_symfony_helpers_verify_email', $user,
+          // From: the app's default (framework.mailer.headers.from).
           (new TemplatedEmail())
-            ->from('noreply@noreply.com')
             ->to($user->getEmailAddress())
             ->subject('Please Confirm Your Email Address')
             ->htmlTemplate('@PixiekatSymfonyHelpers/user/confirm-email.html.twig')
@@ -379,16 +379,46 @@ class UserController extends AbstractController {
       ]);
   }
 
-  private function processSendingPasswordResetEmail(string $emailFormData): RedirectResponse {
-    $user = null;
-    $user = $this->entityManager->getRepository(AppEntity\User::class)->findOneBy([
-      'emailAddress' => $emailFormData,
-    ]);
-    if (!$user) {
-      $user = $this->entityManager->getRepository(AppEntity\User::class)->findOneBy([
-        'email' => $emailFormData,
-      ]);
+  /**
+   * Finds the account for an email address.
+   *
+   * Apps name the email field differently (Infosage: emailAddress; some
+   * older apps: email), so this checks the User mapping and only searches
+   * fields that exist. (It used to try "email" blindly, which throws on apps
+   * without that field: unknown addresses got an error page and known ones
+   * didn't, which told anyone which addresses have accounts.)
+   *
+   * @param string $email The address to look for.
+   * @return AppEntity\User|null The account, or null if there isn't one.
+   */
+  private function findUserByEmail(string $email): ?AppEntity\User {
+    $metadata = $this->entityManager->getClassMetadata(AppEntity\User::class);
+    $repository = $this->entityManager->getRepository(AppEntity\User::class);
+
+    foreach (['emailAddress', 'email'] as $field) {
+      if ($metadata->hasField($field) && ($user = $repository->findOneBy([$field => $email]))) {
+        return $user;
+      }
     }
+
+    return null;
+  }
+
+  /**
+   * Sends the reset link, if there's an account for the address.
+   *
+   * Every outcome (no such account, too many requests, email sent) ends on
+   * the same "check your email" page with nothing extra on it, so this page
+   * can't be used to find out which addresses have accounts.
+   *
+   * The From address is the app's default (framework.mailer.headers.from),
+   * so each app using this bundle sends from its own address.
+   *
+   * @param string $emailFormData The address typed into the form.
+   * @return RedirectResponse Always to the check-email page.
+   */
+  private function processSendingPasswordResetEmail(string $emailFormData): RedirectResponse {
+    $user = $this->findUserByEmail($emailFormData);
 
       // Do not reveal whether a user account was found or not.
       if (!$user) {
@@ -407,14 +437,15 @@ class UserController extends AbstractController {
           //     $translator->trans(ResetPasswordExceptionInterface::MESSAGE_PROBLEM_HANDLE, [], 'ResetPasswordBundle'),
           //     $translator->trans($e->getReason(), [], 'ResetPasswordBundle')
           // ));
-          $this->addFlash('error', 'An error occurred. Please try again later.');
-          $this->logger->error('An error occurred while sending the email: ' . $e->getReason());
+          // Usually "already requested recently" (the bundle's throttle).
+          // Logged only: a flash here would appear only for addresses that
+          // HAVE an account, which gives them away.
+          $this->logger->warning('Password reset email not sent: ' . $e->getReason());
 
           return $this->redirectToRoute('pixiekat_symfony_helpers_password_check_email');
       }
 
       $email = (new TemplatedEmail())
-          ->from('help@alicantobidmc.org')
           ->to($user->getEmailAddress())
           ->subject('Your password reset request')
           ->htmlTemplate('@PixiekatSymfonyHelpers/user/reset-password-email.html.twig')
