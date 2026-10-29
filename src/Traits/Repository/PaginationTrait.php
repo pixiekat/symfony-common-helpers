@@ -9,10 +9,15 @@ trait PaginationTrait {
    * Returns a Doctrine Paginator (Countable + iterable): count($paginator) is the
    * grand total across all pages; iterating yields only this page's rows.
    *
+   * @param int $page 1-based page number
+   * @param int $perPage Number of rows per page
+   * @param array<string, string> $orderBy Optional order by clause, e.g ['id' => 'ASC', 'name' => 'DESC']
+   * @param array<string, string> $joins Optional joins, e.g ['members' => 'm', 'm.user' => 'u']
+   *
    * Returns a Doctrine Paginator (Countable + iterable): count($paginator) is the
    * grand total across all pages; iterating yields only this page's rows.
    */
-  public function paginateStandalone(int $page, int $perPage = 25, ?array $orderBy = []): Paginator {
+  public function paginateStandalone(int $page, int $perPage = 25, ?array $orderBy = [], ?array $joins = []): Paginator {
     $page = max(1, $page);
 
     $orderBy = $orderBy ?: ['updatedAt' => 'DESC', 'id' => 'DESC'];
@@ -21,6 +26,12 @@ trait PaginationTrait {
       ->setFirstResult(($page - 1) * $perPage)
       ->setMaxResults($perPage)
     ;
+
+    if ($joins) {
+      foreach ($joins as $join => $alias) {
+        $query->leftJoin($join, $alias);
+      }
+    }
 
     if ($orderBy) {
       foreach ($orderBy as $field => $direction) {
