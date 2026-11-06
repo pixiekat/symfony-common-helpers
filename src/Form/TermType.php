@@ -31,6 +31,24 @@ class TermType extends AbstractType {
           ),
         ],
       ])
+      // Bound to displayLabel (the raw override), never to 'label'. getLabel()
+      // falls back to the name, so binding to it would pre-fill an empty
+      // override with the name and save the name back as the override.
+      ->add('displayLabel', FormTypes\TextType::class, [
+        'label' => 'Display Label',
+        'required' => false,
+        'help' => 'Optional. What the site shows instead of the name. Leave blank to show the name. The name stays as the import spells it.',
+        'attr' => [
+          'class' => 'form-control',
+          'placeholder' => 'Leave blank to display the name',
+        ],
+        'constraints' => [
+          new Assert\Length(
+            max: 255,
+            maxMessage: 'Display label cannot be longer than {{ limit }} characters.',
+          ),
+        ],
+      ])
       ->add('code', FormTypes\TextType::class, [
         'label' => 'Code',
         'required' => false,

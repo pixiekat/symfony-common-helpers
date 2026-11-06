@@ -13,6 +13,9 @@ use Symfony\Component\Uid\Uuid;
 /**
  * A single entry in a Vocabulary.
  *
+ * Term also has an optional displayLabel, which overrides the name for display
+ * only. See $displayLabel and getLabel().
+ *
  * Term contains three optional properties that are not present in a bare
  * name/weight term: parent, code and source. These are deliberately generic,
  * because they are the three things almost every real controlled vocabulary
@@ -108,6 +111,28 @@ class Term {
   #[ORM\Column(name: 'source', type: 'string', length: 64, nullable: true)]
   private ?string $source = null;
 
+  /**
+   * An optional human-facing override for $name.
+   *
+   * $name is the term's identity: what an import calls it, what the
+   * (vocabulary_id, name) unique constraint keys on, and what importers match
+   * against on the next run. Changing it to read nicely would break that
+   * matching, so a nicer wording lives here instead and $name stays exactly
+   * as the upstream system spells it.
+   *
+   * Null (or blank) means "no override": getLabel() falls back to $name.
+   *
+   * Deliberately NOT EntityLabelTrait. That trait's getLabel() returns the raw
+   * column, whereas Term::getLabel() is a computed fallback. A form field bound
+   * to 'label' would read through getLabel(), pre-fill an empty override with
+   * the name, and save the name back into the override on submit. Keeping the
+   * raw value on its own property (displayLabel) avoids that trap.
+   *
+   * @see Term::getLabel()
+   */
+  #[ORM\Column(name: 'display_label', type: 'string', length: 255, nullable: true)]
+  private ?string $displayLabel = null;
+
   public function __construct() {
     $this->children = new ArrayCollection();
   }
@@ -163,6 +188,52 @@ class Term {
   }
 
   /**
+   * Gets the raw display-label override, without any fallback.
+   *
+   * Use this when you need to know whether an override exists (admin forms,
+   * the term list). For anything shown to end users, use getLabel().
+   *
+   * @return string|null The override, or null when none is set.
+   */
+  public function getDisplayLabel(): ?string {
+    return $this->displayLabel;
+  }
+
+  /**
+   * Sets the display-label override.
+   *
+   * Blank or whitespace-only input is stored as null, so clearing the field in
+   * the admin form actually removes the override instead of leaving an empty
+   * string that getLabel() would have to second-guess.
+   *
+   * @param string|null $displayLabel The override, or null/blank to remove it.
+   * @return self
+   */
+  public function setDisplayLabel(?string $displayLabel): self {
+    $displayLabel = $displayLabel === null ? null : trim($displayLabel);
+    $this->displayLabel = $displayLabel === '' ? null : $displayLabel;
+
+    return $this;
+  }
+
+  /**
+   * Gets the label the application should display for this term.
+   *
+   * Returns the display-label override when one is set, otherwise the name.
+   * This is the method templates and controllers should use for anything
+   * user-facing. Importers and matching code should keep using getName(),
+   * because the name is the stable key and the label is only presentation.
+   *
+   * AuditLogManager already probes for getLabel() when it builds an audit
+   * entry's target label, so audit entries pick up the override automatically.
+   *
+   * @return string The display label, or the name when there is no override.
+   */
+  public function getLabel(): string {
+    return $this->displayLabel ?? (string) $this->getName();
+  }
+
+  /**
    * Gets the vocabulary for this term.
    *
    * @return Vocabulary|null
@@ -186,9 +257,13 @@ class Term {
   /**
    * String representation of the Term.
    *
-   * @return string
+   * Uses getLabel(), so anything that casts a term to a string, such as the
+   * parent-term dropdown in TermType or {{ term }} in Twig, shows the override
+   * when there is one.
+   *
+   * @return string The display label, or the name when there is no override.
    */
   public function __toString(): string {
-    return $this->getName() ?? '';
+    return $this->getLabel();
   }
 }

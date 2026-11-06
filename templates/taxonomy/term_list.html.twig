@@ -24,6 +24,7 @@
             <thead>
               <tr>
                 <th>{{ 'Name'|trans }}</th>
+                <th>{{ 'Display Label'|trans }}</th>
                 <th>{{ 'Code'|trans }}</th>
                 <th>{{ 'Source'|trans }}</th>
                 <th>{{ 'Parent Term'|trans }}</th>
@@ -35,6 +36,9 @@
                 {% for term in terms %}
                   <tr>
                     <td>{{ term.name }}</td>
+                    {# Raw override only, so admins can tell "no override" apart
+                       from "override that happens to match the name". #}
+                    <td>{{ term.displayLabel|default('—') }}</td>
                     <td>{{ term.code }}</td>
                     <td>{{ term.source }}</td>
                     <td>{{ term.parent.name|default('None') }}</td>
@@ -50,7 +54,7 @@
                 {% endfor %}
               {% else %}
                 <tr>
-                  <td colspan="4">{{ 'No terms found.'|trans }}</td>
+                  <td colspan="6">{{ 'No terms found.'|trans }}</td>
                 </tr>
               {% endif %}
             </tbody>
